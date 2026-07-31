@@ -1,0 +1,16 @@
+{
+  "name": "token",
+  "targets": {
+    "create-variables": {
+      "options": {
+        "variables": [
+          {
+            "name": "TOKEN",
+            "description": "An externally issued token.",
+            "isSecret": true
+          }
+        ]
+      }
+    }
+  }
+}

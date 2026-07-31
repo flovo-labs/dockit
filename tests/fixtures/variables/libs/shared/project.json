@@ -1,0 +1,19 @@
+{
+  "name": "shared",
+  "targets": {
+    "create-variables": {
+      "options": {
+        "variables": [
+          {
+            "name": "SHARED_VALUE",
+            "description": "Shared value."
+          },
+          {
+            "name": "DUP",
+            "description": "Dup declared by shared."
+          }
+        ]
+      }
+    }
+  }
+}

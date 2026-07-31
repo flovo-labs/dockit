@@ -1,0 +1,4 @@
+services:
+  traefik:
+    ports:
+      - '443:443'

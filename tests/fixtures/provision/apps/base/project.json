@@ -1,0 +1,30 @@
+{
+  "name": "base",
+  "targets": {
+    "create-volumes": {
+      "executor": "@raeffs/docker-compose:create-volumes",
+      "options": {
+        "volumes": [
+          {
+            "name": "shared-data",
+            "userId": 1000,
+            "image": "alpine",
+            "mountPath": "/data"
+          }
+        ]
+      }
+    },
+    "create-networks": {
+      "executor": "@raeffs/docker-compose:create-networks",
+      "options": {
+        "networks": [
+          {
+            "name": "frontend",
+            "subnet": "10.0.0.0/24",
+            "ipRange": "10.0.0.128/25"
+          }
+        ]
+      }
+    }
+  }
+}

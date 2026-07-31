@@ -1,0 +1,101 @@
+name: Release
+
+# Publish a static x86_64-unknown-linux-musl binary to the public GitHub
+# releases repo (raeffs/tug) when a vX.Y.Z tag is pushed.
+on:
+  push:
+    tags: ['v*.*.*']
+
+env:
+  CARGO_TERM_COLOR: always
+  TARGET: x86_64-unknown-linux-musl
+  RELEASES_REPO: raeffs/tug
+
+jobs:
+  release:
+    runs-on: docker
+    container:
+      image: ghcr.io/catthehacker/ubuntu:act-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Rust toolchain
+        run: |
+          curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs \
+            | sh -s -- -y --profile minimal --default-toolchain none
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
+      - name: Install musl target and linker
+        # implicitly provisions the toolchain pinned by rust-toolchain.toml
+        run: |
+          rustc --version
+          rustup target add "$TARGET"
+          apt-get update
+          apt-get install -y --no-install-recommends musl-tools
+
+      - name: Assert tag matches Cargo.toml version
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          TAG_VERSION="${TAG#v}"
+          CARGO_VERSION="$(grep -m1 '^version' Cargo.toml | sed -E 's/version *= *"([^"]+)".*/\1/')"
+          echo "tag=$TAG tag_version=$TAG_VERSION cargo_version=$CARGO_VERSION"
+          if [ "$TAG_VERSION" != "$CARGO_VERSION" ]; then
+            echo "::error::tag $TAG (version $TAG_VERSION) != Cargo.toml version $CARGO_VERSION"
+            exit 1
+          fi
+
+      - name: Build release binary
+        run: cargo build --release --target "$TARGET"
+
+      - name: Package binary and checksum
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          ASSET="tug-${TAG}-${TARGET}"
+          cp "target/${TARGET}/release/tug" "$ASSET"
+          sha256sum "$ASSET" > "${ASSET}.sha256"
+          echo "ASSET=$ASSET" >> "$GITHUB_ENV"
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          api="https://api.github.com/repos/${RELEASES_REPO}"
+          # Prerelease when the tag carries a semver pre-release suffix (v1.2.3-rc1).
+          case "$TAG" in *-*) PRERELEASE=true ;; *) PRERELEASE=false ;; esac
+
+          # 1. Create the release. Body built with jq to avoid quoting bugs; no
+          # generate_release_notes (release notes are deferred — see map fog).
+          # Non-2xx prints the API response body so failures are diagnosable.
+          req="$(jq -nc --arg t "$TAG" --argjson pre "$PRERELEASE" \
+            '{tag_name:$t, name:$t, prerelease:$pre}')"
+          code="$(curl -sS -o create.json -w '%{http_code}' -X POST "${api}/releases" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -d "$req")"
+          echo "create release -> HTTP $code"
+          cat create.json
+          if [ "$code" != "201" ]; then
+            echo "::error::release creation failed (HTTP $code)"; exit 1
+          fi
+          release_id="$(jq -r '.id' create.json)"
+          echo "created release $release_id for $TAG"
+
+          # 2. Upload the binary and its checksum as raw-binary assets.
+          for f in "$ASSET" "${ASSET}.sha256"; do
+            echo "uploading $f"
+            code="$(curl -sS -o upload.json -w '%{http_code}' -X POST \
+              "https://uploads.github.com/repos/${RELEASES_REPO}/releases/${release_id}/assets?name=${f}" \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary @"$f")"
+            echo "upload $f -> HTTP $code"
+            if [ "$code" != "201" ]; then
+              cat upload.json; echo "::error::asset upload failed ($f, HTTP $code)"; exit 1
+            fi
+          done
+          echo "release published: https://github.com/${RELEASES_REPO}/releases/tag/${TAG}"

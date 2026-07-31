@@ -1,0 +1,12 @@
+{
+  "name": "app",
+  "implicitDependencies": ["base"],
+  "targets": {
+    "create-volumes": {
+      "executor": "@raeffs/docker-compose:create-volumes",
+      "options": {
+        "volumes": ["app-data", { "name": "app-media", "userId": 1000 }]
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+services:
+  «kebab»:
+    container_name: '«kebab»'
+    image: ''
+    restart: 'unless-stopped'
+    networks:
+      - 'default-frontend'
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '«kebab»-data:/data'
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.«kebab».rule=Host(`${«CONSTANT»_DOMAIN}`)'
+      - 'traefik.http.routers.«kebab».entrypoints=websecure'
+      - 'traefik.http.routers.«kebab».tls=true'
+      - 'traefik.http.routers.«kebab».tls.certresolver=letsencrypt'
+      - 'traefik.http.routers.«kebab».tls.domains[0].main=${«CONSTANT»_DOMAIN}'
+      - 'traefik.http.routers.«kebab».middlewares=default@file'
+      - 'traefik.http.services.«kebab».loadbalancer.server.port=8080'
+
+volumes:
+  «kebab»-data:
+    external: true
+
+networks:
+  default-frontend:
+    external: true

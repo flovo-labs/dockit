@@ -1,0 +1,21 @@
+{
+  "name": "child",
+  "implicitDependencies": ["shared"],
+  "targets": {
+    "create-variables": {
+      "options": {
+        "variables": [
+          {
+            "name": "CHILD_VALUE",
+            "description": "Child value.",
+            "defaultValue": "${SHARED_VALUE}-suffix"
+          },
+          {
+            "name": "DUP",
+            "description": "Dup declared by child."
+          }
+        ]
+      }
+    }
+  }
+}

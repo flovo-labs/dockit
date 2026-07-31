@@ -1,0 +1,63 @@
+{
+  "name": "traefik",
+  "implicitDependencies": ["networks"],
+  "targets": {
+    "create-volumes": {
+      "executor": "@raeffs/docker-compose:create-volumes",
+      "options": {
+        "volumes": [
+          { "name": "traefik-certificates", "userId": 65001 },
+          "traefik-logs"
+        ]
+      }
+    },
+    "create-variables": {
+      "executor": "@raeffs/docker-compose:create-variables",
+      "options": {
+        "variables": [
+          {
+            "name": "DEFAULT_DOMAIN_SUFFIX",
+            "description": "Public DNS name suffix that is used to reach the services."
+          },
+          {
+            "name": "TRAEFIK_DOMAIN",
+            "description": "Public domain name for Traefik.",
+            "defaultValue": "traefik.${DEFAULT_DOMAIN_SUFFIX}"
+          },
+          {
+            "name": "TRAEFIK_DOCKER_GID",
+            "description": "GID of the docker group.",
+            "type": "docker-group"
+          },
+          {
+            "name": "TRAEFIK_DASHBOARD_PASSWORD",
+            "description": "Password for the Traefik dashboard.",
+            "type": "password",
+            "isSecret": true
+          },
+          {
+            "name": "TRAEFIK_API_KEY",
+            "description": "API key for the management endpoint.",
+            "type": "generated",
+            "isSecret": true
+          },
+          {
+            "name": "TRAEFIK_ENABLE_METRICS",
+            "description": "Expose the Prometheus metrics endpoint?",
+            "type": "boolean"
+          },
+          {
+            "name": "TRAEFIK_HOST_NAME",
+            "description": "Name of the machine Traefik runs on.",
+            "type": "hostname"
+          },
+          {
+            "name": "TRAEFIK_EXTRA_ARGS",
+            "description": "Additional command-line arguments.",
+            "optional": true
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "app",
+  "implicitDependencies": ["base"],
+  "targets": {
+    "create-volumes": {
+      "executor": "@raeffs/docker-compose:create-volumes",
+      "options": {
+        "volumes": [{ "name": "shared-data", "userId": 9999 }, "app-data"]
+      }
+    },
+    "create-networks": {
+      "executor": "@raeffs/docker-compose:create-networks",
+      "options": {
+        "networks": [
+          {
+            "name": "frontend",
+            "subnet": "10.9.9.0/24",
+            "ipRange": "10.9.9.0/25"
+          },
+          {
+            "name": "backend",
+            "subnet": "10.1.0.0/24",
+            "ipRange": "10.1.0.0/25"
+          }
+        ]
+      }
+    }
+  }
+}

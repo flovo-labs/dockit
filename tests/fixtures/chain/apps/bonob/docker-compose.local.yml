@@ -1,0 +1,4 @@
+services:
+  bonob:
+    ports:
+      - '4534:4534'

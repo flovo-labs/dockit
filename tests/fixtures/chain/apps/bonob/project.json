@@ -1,0 +1,21 @@
+{
+  "name": "bonob",
+  "implicitDependencies": ["networks", "traefik", "navidrome"],
+  "targets": {
+    "create-variables": {
+      "options": {
+        "variables": [
+          {
+            "name": "DEFAULT_DOMAIN_SUFFIX",
+            "description": "Declared by bonob."
+          },
+          {
+            "name": "BONOB_DOMAIN",
+            "description": "Public domain name for Bonob.",
+            "defaultValue": "bonob.${DEFAULT_DOMAIN_SUFFIX}"
+          }
+        ]
+      }
+    }
+  }
+}

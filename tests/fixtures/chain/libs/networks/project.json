@@ -1,0 +1,17 @@
+{
+  "name": "networks",
+  "targets": {
+    "create-networks": {
+      "executor": "@raeffs/docker-compose:create-networks",
+      "options": {
+        "networks": [
+          {
+            "name": "default-frontend",
+            "subnet": "172.20.0.0/24",
+            "ipRange": "172.20.0.128/25"
+          }
+        ]
+      }
+    }
+  }
+}

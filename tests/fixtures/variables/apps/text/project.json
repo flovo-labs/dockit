@@ -1,0 +1,25 @@
+{
+  "name": "text",
+  "targets": {
+    "create-variables": {
+      "options": {
+        "variables": [
+          {
+            "name": "TEXT_REQUIRED",
+            "description": "Required text."
+          },
+          {
+            "name": "TEXT_OPTIONAL",
+            "description": "Optional text.",
+            "optional": true
+          },
+          {
+            "name": "TEXT_DEFAULT",
+            "description": "Defaulted text.",
+            "defaultValue": "svc.${DOMAIN}"
+          }
+        ]
+      }
+    }
+  }
+}

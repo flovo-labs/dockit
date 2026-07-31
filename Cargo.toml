@@ -1,0 +1,22 @@
+[package]
+name = "tug"
+version = "1.0.0"
+edition = "2024"
+description = "Orchestrates a repository's Docker Compose projects"
+authors = ["Raphael Fleischlin"]
+license = "MIT"
+repository = "https://github.com/raeffs/tug"
+readme = "README.md"
+keywords = ["docker", "docker-compose", "orchestration", "self-hosted", "cli"]
+categories = ["command-line-utilities"]
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+
+[dependencies]
+anyhow = "1.0.103"
+clap = { version = "4.6.2", features = ["derive"] }
+getrandom = "0.4.3"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.150"

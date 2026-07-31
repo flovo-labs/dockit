@@ -1,0 +1,4 @@
+{
+  "name": "navidrome",
+  "implicitDependencies": ["networks", "traefik"]
+}

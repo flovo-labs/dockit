@@ -1,0 +1,4 @@
+# A compose-only directory: no project.json, so this is NOT a project.
+services:
+  base:
+    restart: unless-stopped

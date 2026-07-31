@@ -1,0 +1,26 @@
+{
+  "name": "traefik",
+  "implicitDependencies": ["networks"],
+  "targets": {
+    "create-variables": {
+      "options": {
+        "variables": [
+          {
+            "name": "DEFAULT_DOMAIN_SUFFIX",
+            "description": "Declared by traefik."
+          },
+          {
+            "name": "TRAEFIK_DOMAIN",
+            "description": "Public domain name for Traefik.",
+            "defaultValue": "traefik.${DEFAULT_DOMAIN_SUFFIX}"
+          }
+        ]
+      }
+    },
+    "create-volumes": {
+      "options": {
+        "volumes": [{ "name": "traefik-certificates", "userId": 65001 }]
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "special",
+  "targets": {
+    "create-variables": {
+      "options": {
+        "variables": [
+          {
+            "name": "FLAG",
+            "description": "Enable the flag?",
+            "type": "boolean"
+          },
+          {
+            "name": "DOCKER_GID",
+            "description": "GID of the docker group.",
+            "type": "docker-group"
+          },
+          {
+            "name": "HOST",
+            "description": "Name of this machine.",
+            "type": "hostname"
+          }
+        ]
+      }
+    }
+  }
+}

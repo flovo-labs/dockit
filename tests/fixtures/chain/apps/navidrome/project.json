@@ -1,0 +1,26 @@
+{
+  "name": "navidrome",
+  "implicitDependencies": ["networks"],
+  "targets": {
+    "create-variables": {
+      "options": {
+        "variables": [
+          {
+            "name": "DEFAULT_DOMAIN_SUFFIX",
+            "description": "Declared by navidrome."
+          },
+          {
+            "name": "NAVIDROME_DOMAIN",
+            "description": "Public domain name for Navidrome.",
+            "defaultValue": "navidrome.${DEFAULT_DOMAIN_SUFFIX}"
+          }
+        ]
+      }
+    },
+    "create-volumes": {
+      "options": {
+        "volumes": ["navidrome-music"]
+      }
+    }
+  }
+}

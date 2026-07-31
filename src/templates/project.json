@@ -1,0 +1,27 @@
+{
+  "name": "«kebab»",
+  "implicitDependencies": [
+    "networks",
+    "traefik"
+  ],
+  "targets": {
+    "create-volumes": {
+      "options": {
+        "volumes": [
+          "«kebab»-data"
+        ]
+      }
+    },
+    "create-variables": {
+      "options": {
+        "variables": [
+          {
+            "name": "«CONSTANT»_DOMAIN",
+            "description": "Public domain name for «Class».",
+            "defaultValue": "«kebab».${DEFAULT_DOMAIN_SUFFIX}"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+{
+  "name": "bonob",
+  "implicitDependencies": ["navidrome", "traefik"]
+}

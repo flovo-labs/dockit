@@ -1,0 +1,3 @@
+services:
+  retired:
+    image: 'busybox'
