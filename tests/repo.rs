@@ -32,8 +32,9 @@ fn repo_root_detection_errors_outside_a_git_repository() {
 
 #[test]
 fn discovery_finds_every_project_and_skips_excluded_directories() {
-    // The basic fixture also contains a compose-only directory (libs/base),
-    // a node_modules decoy, and a dot-directory decoy — none may surface.
+    // The basic fixture also contains a compose-only directory (libs/base), a
+    // node_modules decoy its .tugignore names, and a dot-directory decoy
+    // skipped unconditionally — none may surface.
     let root = common::fixture("basic");
 
     let repo = Repo::discover(&root.join("apps").join("whoami")).unwrap();
@@ -41,6 +42,92 @@ fn discovery_finds_every_project_and_skips_excluded_directories() {
     assert_eq!(repo.root(), root);
     let names: Vec<&str> = repo.projects().map(|p| p.name.as_str()).collect();
     assert_eq!(names, ["networks", "traefik", "whoami"]);
+}
+
+#[test]
+fn projects_inside_an_ignored_directory_are_not_discovered() {
+    // The manifest under archive/ is well-formed and would otherwise be a
+    // perfectly ordinary project; the .tugignore is the only reason it is
+    // absent.
+    let root = common::fixture("ignored");
+
+    let repo = Repo::discover(&root).unwrap();
+
+    let names: Vec<&str> = repo.projects().map(|p| p.name.as_str()).collect();
+    assert_eq!(names, ["whoami"]);
+}
+
+#[test]
+fn a_malformed_manifest_inside_an_ignored_directory_cannot_break_discovery() {
+    // The ignored fixture's archive/broken/project.json is not valid JSON.
+    // Never reading it is what makes this hold, so this locks the difference
+    // between skipping a tree and filtering it out after the fact.
+    let root = common::fixture("ignored");
+
+    let repo = Repo::discover(&root).unwrap();
+
+    assert!(repo.project("whoami").is_some());
+}
+
+#[test]
+fn a_dependency_on_a_project_inside_an_ignored_directory_is_an_error() {
+    // Ignored means nonexistent, and an edge to a nonexistent project is
+    // fatal — deliberately, so a retired dependency surfaces at the manifest
+    // rather than as a container that never started.
+    let root = common::fixture("ignored-dependency");
+
+    let message = format!("{:#}", Repo::discover(&root).unwrap_err());
+
+    assert!(
+        message.contains("app") && message.contains("retired"),
+        "unexpected error: {message}"
+    );
+}
+
+#[test]
+fn dot_directories_are_the_only_skip_tug_makes_on_its_own() {
+    // tug carries no knowledge of anyone's ecosystem: node_modules is an
+    // ordinary directory unless the repository says otherwise in a
+    // .tugignore. Dot-directories stay unconditional because that is tug
+    // shielding itself from .git, .secrets, and .backups.
+    let root = temp_dir("no-builtin-skips");
+    std::fs::create_dir_all(root.join(".git")).unwrap();
+    for (dir, name) in [
+        ("apps/whoami", "whoami"),
+        ("node_modules/pkg", "vendored"),
+        (".cache/pkg", "cached"),
+    ] {
+        let dir = root.join(dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(
+            dir.join("project.json"),
+            format!("{{\"name\": \"{name}\"}}"),
+        )
+        .unwrap();
+    }
+
+    let repo = Repo::discover(&root).unwrap();
+
+    let names: Vec<&str> = repo.projects().map(|p| p.name.as_str()).collect();
+    assert_eq!(names, ["vendored", "whoami"]);
+}
+
+#[test]
+fn an_unreadable_tugignore_is_an_error() {
+    // Falling back to "ignore nothing" would silently widen every command to
+    // trees the repository asked tug to stay out of, so an unreadable file
+    // has to fail loudly. A directory stands in for one: it exists, and
+    // reading it as a file cannot succeed.
+    let root = temp_dir("unreadable-tugignore");
+    std::fs::create_dir_all(root.join(".git")).unwrap();
+    std::fs::create_dir_all(root.join(".tugignore")).unwrap();
+
+    let message = format!("{:#}", Repo::discover(&root).unwrap_err());
+
+    assert!(
+        message.contains(".tugignore"),
+        "unexpected error: {message}"
+    );
 }
 
 // Long because it asserts the full project.json parsing surface, deliberately.

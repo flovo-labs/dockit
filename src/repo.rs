@@ -7,6 +7,8 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, bail};
 use serde::Deserialize;
 
+use crate::ignore::IgnoreList;
+
 /// The discovered repository: its root and every project in it.
 #[derive(Debug)]
 pub struct Repo {
@@ -32,16 +34,6 @@ pub struct Project {
     /// A `docker-compose.yml` sits next to `project.json`; without one the
     /// project is a graph-only node — no `up`/`down`/`pull`.
     pub has_compose_file: bool,
-}
-
-impl Project {
-    /// A retired project: its directory sits under the conventional
-    /// `archive/` tree. Presentation-only — directory names are kept out of
-    /// the behavioral contract, so this only affects how listings render.
-    #[must_use]
-    pub fn is_archived(&self) -> bool {
-        self.dir.starts_with("archive")
-    }
 }
 
 /// One variable spec of the `create-variables` target.
@@ -193,8 +185,9 @@ impl Repo {
     /// (duplicate names, unknown dependencies).
     pub fn discover(cwd: &Path) -> Result<Self> {
         let root = find_repo_root(cwd)?;
+        let ignore = IgnoreList::read(&root)?;
         let mut projects = BTreeMap::new();
-        scan(&root, &root, &mut projects)?;
+        scan(&root, &root, &ignore, &mut projects)?;
         for project in projects.values() {
             for dependency in &project.implicit_dependencies {
                 if !projects.contains_key(dependency) {
@@ -245,9 +238,15 @@ impl Repo {
     }
 }
 
-/// Recursively collect projects, skipping `node_modules/` and dot-prefixed
-/// directories.
-fn scan(root: &Path, dir: &Path, projects: &mut BTreeMap<String, Project>) -> Result<()> {
+/// Recursively collect projects, skipping dot-prefixed directories — tug's
+/// own `.git`, `.secrets`, and `.backups` live there — and anything the
+/// repository's `.tugignore` names.
+fn scan(
+    root: &Path,
+    dir: &Path,
+    ignore: &IgnoreList,
+    projects: &mut BTreeMap<String, Project>,
+) -> Result<()> {
     let manifest = dir.join("project.json");
     if manifest.is_file() {
         let text = std::fs::read_to_string(&manifest)
@@ -292,10 +291,15 @@ fn scan(root: &Path, dir: &Path, projects: &mut BTreeMap<String, Project>) -> Re
         }
         let name = entry.file_name();
         let name = name.to_string_lossy();
-        if name == "node_modules" || name.starts_with('.') {
+        if name.starts_with('.') {
             continue;
         }
-        scan(root, &entry.path(), projects)?;
+        let path = entry.path();
+        let relative = path.strip_prefix(root).expect("scan stays under root");
+        if ignore.ignores(relative) {
+            continue;
+        }
+        scan(root, &path, ignore, projects)?;
     }
     Ok(())
 }

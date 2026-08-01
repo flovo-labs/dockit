@@ -24,7 +24,7 @@ fn grammar() -> Vec<CommandGrammar> {
     vec![
         leaf("up", true, &["--force", "--no-detach", "--dry-run"]),
         leaf("logs", true, &["--follow"]),
-        leaf("list", false, &["--all"]),
+        leaf("list", false, &[]),
         CommandGrammar {
             name: "all".to_owned(),
             takes_project: false,
@@ -36,6 +36,18 @@ fn grammar() -> Vec<CommandGrammar> {
             ],
         },
     ]
+}
+
+#[test]
+fn project_completion_never_offers_a_project_inside_an_ignored_directory() {
+    // Completion is the surface whose entire job is showing what can be acted
+    // on, and it gets that for free by reading the discovered set — this
+    // locks it against a future candidate source that enumerates differently.
+    let repo = Repo::discover(&common::fixture("ignored")).unwrap();
+
+    let got = completion::candidates(&grammar(), Some(&repo), &["up", ""]);
+
+    assert_eq!(got, vec!["whoami"]);
 }
 
 #[test]

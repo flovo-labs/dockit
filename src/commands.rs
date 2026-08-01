@@ -204,28 +204,17 @@ pub fn pull(
     single_project_command(repo, process_env, name, &["pull"], runner)
 }
 
-/// `list`: every project with its direct dependencies, sorted
-/// by name — one line each, dependencies in declaration order. Archived
-/// projects are omitted unless `all` is set.
+/// `list`: every discovered project with its direct dependencies, sorted
+/// by name — one line each, dependencies in declaration order. What counts
+/// as discovered is settled before this ever runs: a project inside an
+/// ignored directory does not exist.
 #[must_use]
-pub fn list(repo: &Repo, all: bool) -> String {
+pub fn list(repo: &Repo) -> String {
     let mut listing = String::new();
-    for project in repo.projects().filter(|project| !project.is_archived()) {
-        listing.push_str(&project_line(project));
-    }
-    let archived: Vec<&Project> = repo.projects().filter(|p| p.is_archived()).collect();
-    if all && !archived.is_empty() {
-        listing.push_str("\narchived:\n");
-        for project in archived {
-            listing.push_str(&project_line(project));
-        }
+    for project in repo.projects() {
+        listing.push_str(&edge_line(&project.name, &project.implicit_dependencies));
     }
     listing
-}
-
-/// One `list` line: the name, plus the direct dependencies when present.
-fn project_line(project: &Project) -> String {
-    edge_line(&project.name, &project.implicit_dependencies)
 }
 
 /// Options of `deps`.
@@ -329,10 +318,7 @@ pub fn ps(
 
     let mut rows: Vec<(String, String, String)> = Vec::new();
     for (project, entry) in &matched {
-        let mut files = relative_config_files(repo, &entry.config_files);
-        if project.is_archived() {
-            files.push_str("  (archived)");
-        }
+        let files = relative_config_files(repo, &entry.config_files);
         rows.push((project.name.clone(), entry.status.clone(), files));
     }
 

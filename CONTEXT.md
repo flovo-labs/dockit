@@ -26,11 +26,13 @@ reading the source or writing about it, use them too.
   cascades but is silently skipped by lifecycle commands; naming one directly
   for `up`/`down`/`pull`/etc. is an error.
 
-- **Archived project** — a project whose directory sits under `archive/`. This
-  is presentation-only: archived projects are hidden from `list` by default and
-  marked `(archived)` in `ps`, but are otherwise ordinary projects in every
-  command. Directory names (`apps/`, `libs/`, `archive/`) are **convention, not
-  contract** — discovery scans the whole repository.
+- **Ignored directory** — a directory named by the repo root's `.tugignore`
+  that discovery never descends into. Its `project.json` files are never read,
+  so the projects inside do not exist as far as every command is concerned:
+  they appear in no listing, and naming one is an unknown project.
+  Dot-directories are always ignored. Directory names (`apps/`, `libs/`,
+  `archive/`) remain **convention, not contract** — discovery scans the whole
+  repository apart from what is ignored.
 
 ## The dependency graph
 
@@ -103,9 +105,10 @@ reading the source or writing about it, use them too.
 ## How it fits together
 
 A run always starts by finding the repo root and **discovering** every project
-under it. Those projects and their `implicitDependencies` form the **dependency
-graph**. A lifecycle command like `up` walks that graph to build the named
-project's **cascade** in **topological order**, then, for each **compose
+under it, apart from anything inside an **ignored directory**. Those projects
+and their `implicitDependencies` form the **dependency graph**. A lifecycle
+command like `up` walks that graph to build the named project's **cascade** in
+**topological order**, then, for each **compose
 project** in it (skipping **graph-only** ones), assembles one `docker compose`
 **Invocation** — with the right **compose overlay** and **merged environment**
 — and hands it to a **Runner**. Provisioning commands walk the same cascade but

@@ -45,6 +45,7 @@ variables/volumes/networks it needs:
   archive/<name>/         # retired services
   .env / .env.local       # dotenv layers
   .secrets/               # one file per secret
+  .tugignore              # optional: directories to stay out of entirely
 ```
 
 ```jsonc
@@ -60,7 +61,8 @@ variables/volumes/networks it needs:
 ```
 
 Directory names (`apps/`, `libs/`, `archive/`) are convention — discovery scans
-the whole repo for `project.json` files. The full contract is in
+the whole repo for `project.json` files, skipping dot-directories and anything
+an optional root `.tugignore` names. The full contract is in
 [`docs/reference.md`](docs/reference.md); the vocabulary is in
 [`CONTEXT.md`](CONTEXT.md).
 
@@ -148,7 +150,7 @@ tug up bonob --dry-run
 | `pull <project>` | Pull the project's images (no cascade). |
 | `logs <project>` | Stream the project's logs. `--follow`. |
 | `all down\|restart\|pull` | Run a verb over every **running** project, best-effort. |
-| `list` | Every project with its direct dependencies. `--all` includes archived. |
+| `list` | Every project with its direct dependencies. |
 | `deps <project>` | Query the dependency graph. `--reverse`, `--transitive`, `--json`. |
 | `ps` | The repository's running projects and their status. |
 | `configure <project>` | Provision variables, volumes, and networks for the chain. `--use-defaults`. |

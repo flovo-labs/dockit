@@ -6,6 +6,8 @@
 
 - `up --no-deps` starts only the named project, skipping the dependency
   cascade.
+- An optional `.tugignore` at the repo root names directories discovery never
+  descends into.
 
 ## [1.0.0] — 2026-07-31
 

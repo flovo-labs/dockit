@@ -723,7 +723,7 @@ fn list_prints_every_project_with_its_direct_dependencies_sorted_by_name() {
     let root = common::fixture("chain");
     let repo = Repo::discover(&root).unwrap();
 
-    let listing = commands::list(&repo, false);
+    let listing = commands::list(&repo);
 
     assert_eq!(
         listing,
@@ -731,43 +731,6 @@ fn list_prints_every_project_with_its_direct_dependencies_sorted_by_name() {
          navidrome (networks)\n\
          networks\n\
          traefik (networks)\n"
-    );
-}
-
-#[test]
-fn list_hides_archived_projects_by_default() {
-    // Projects under archive/ are presentation-only retired — the
-    // default listing omits them.
-    let root = common::fixture("listing");
-    let repo = Repo::discover(&root).unwrap();
-
-    let listing = commands::list(&repo, false);
-
-    assert_eq!(
-        listing,
-        "bonob (networks)\n\
-         networks\n\
-         whoami\n"
-    );
-}
-
-#[test]
-fn list_all_appends_archived_projects_as_a_trailing_section() {
-    // --all reveals archived projects, grouped after the active
-    // ones under an `archived:` header.
-    let root = common::fixture("listing");
-    let repo = Repo::discover(&root).unwrap();
-
-    let listing = commands::list(&repo, true);
-
-    assert_eq!(
-        listing,
-        "bonob (networks)\n\
-         networks\n\
-         whoami\n\
-         \n\
-         archived:\n\
-         retired\n"
     );
 }
 
@@ -821,26 +784,6 @@ fn ps_matches_compose_names_to_directories_and_excludes_non_repo_projects() {
         listing,
         "bonob   running(2)  apps/music/docker-compose.yml\n\
          whoami  running(1)  apps/whoami/docker-compose.yml\n"
-    );
-}
-
-#[test]
-fn ps_marks_a_running_archived_project() {
-    // A retired service still running is worth knowing about —
-    // it shows with an (archived) marker rather than being hidden.
-    let root = common::fixture("listing");
-    let repo = Repo::discover(&root).unwrap();
-    let stdout = format!(
-        r#"[{{"Name":"retired","Status":"running(1)","ConfigFiles":"{root}/archive/retired/docker-compose.yml"}}]"#,
-        root = root.display()
-    );
-    let mut runner = ComposeLsRunner::listing(&stdout);
-
-    let (_, listing) = commands::ps(&repo, &BTreeMap::new(), &mut runner).unwrap();
-
-    assert_eq!(
-        listing,
-        "retired  running(1)  archive/retired/docker-compose.yml  (archived)\n"
     );
 }
 
@@ -900,15 +843,6 @@ fn ps_prepends_the_ci_flags_when_ci_is_set() {
             "json"
         ]
     );
-}
-
-#[test]
-fn list_all_without_archived_projects_matches_the_default_listing() {
-    // No archived projects → --all adds nothing, not an empty section.
-    let root = common::fixture("chain");
-    let repo = Repo::discover(&root).unwrap();
-
-    assert_eq!(commands::list(&repo, true), commands::list(&repo, false));
 }
 
 #[test]
@@ -1441,30 +1375,6 @@ fn all_reports_no_running_projects_without_issuing_any_verb() {
     assert_eq!((code, summary.as_str()), (0, "no running projects\n"));
     assert!(runner.verbs().is_empty());
     assert_eq!(runner.recorded.len(), 1, "only the selection query ran");
-}
-
-#[test]
-fn all_includes_a_running_archived_project() {
-    // `archive/` is presentation-only, so a running
-    // archived project is acted on like any other — not silently skipped.
-    let root = common::fixture("listing");
-    let repo = Repo::discover(&root).unwrap();
-    let ls = compose_ls_json(&root, &[("retired", "archive/retired/docker-compose.yml")]);
-    let mut runner = BulkRunner::listing(&ls);
-
-    let (code, summary) =
-        commands::all(&repo, &plain_env(), commands::BulkVerb::Down, &mut runner).unwrap();
-
-    assert_eq!((code, summary.as_str()), (0, "all down: 1 ok\n"));
-    assert_eq!(
-        runner.verbs(),
-        vec![compose(&[
-            "--file",
-            "archive/retired/docker-compose.yml",
-            "down",
-            "--remove-orphans",
-        ])]
-    );
 }
 
 #[test]

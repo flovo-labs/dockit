@@ -16,6 +16,8 @@
 //!   `create-networks`, and the `configure` orchestrator.
 //! - [`repo`] — the repository model: root detection, project discovery,
 //!   `project.json` parsing.
+//! - [`ignore`] — the `.tugignore` pattern list: which directories discovery
+//!   never descends into.
 //! - [`graph`] — the dependency graph: transitive closure, cycle detection,
 //!   deterministic ordering.
 //! - [`scaffold`] — the `new` command: casing normalization and scaffolding
@@ -28,6 +30,7 @@ pub mod commands;
 pub mod completion;
 pub mod env;
 pub mod graph;
+pub mod ignore;
 pub mod process;
 pub mod provision;
 pub mod repo;

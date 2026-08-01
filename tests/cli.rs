@@ -221,20 +221,18 @@ fn list_prints_the_projects_sorted_by_name() {
 }
 
 #[test]
-fn list_all_reveals_archived_projects_end_to_end() {
-    let root = common::fixture("listing");
+fn naming_a_project_inside_an_ignored_directory_reports_an_unknown_project() {
+    // The end-to-end proof that ignored means nonexistent rather than
+    // hidden: the name is not merely absent from listings, it is not a name.
+    let root = common::fixture("ignored");
 
-    let output = tug(&root, &["list", "--all"]);
+    let output = tug(&root, &["up", "retired"]);
 
-    assert!(output.status.success(), "{output:?}");
-    assert_eq!(
-        String::from_utf8(output.stdout).unwrap(),
-        "bonob (networks)\n\
-         networks\n\
-         whoami\n\
-         \n\
-         archived:\n\
-         retired\n"
+    assert!(!output.status.success(), "{output:?}");
+    let stderr = String::from_utf8(output.stderr).unwrap();
+    assert!(
+        stderr.contains("unknown project") && stderr.contains("retired"),
+        "unexpected stderr: {stderr}"
     );
 }
 

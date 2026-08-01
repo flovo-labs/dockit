@@ -29,13 +29,17 @@ tug expects a repository shaped roughly like this:
   .env.local              # gitignored; written by `configure` (append-only)
   .secrets/               # gitignored contents; one file per secret
   .backups/               # gitignored contents; default backup location
+  .tugignore              # optional; directories discovery stays out of
   apps/<name>/            # one directory per running service
-  archive/<name>/         # retired services (still valid projects)
+  archive/<name>/         # retired services, typically named in .tugignore
   libs/<name>/            # shared compose snippets and graph-only projects
 ```
 
 The directory names `apps/`, `libs/`, `archive/` are **convention, not
 contract**: discovery scans the whole repository and does not hardcode them.
+`archive/` in particular means nothing to tug — a repository that wants its
+retired services left alone says so in `.tugignore` (1.3), which works for any
+directory and not just that one.
 
 ### 1.2 Projects and discovery
 
@@ -52,15 +56,66 @@ A **project** is any directory containing a `project.json`. A
   `extends:` template snippets under `libs/`) are **not** projects.
 
 Discovery recursively scans from the repo root for `project.json` files,
-skipping `node_modules/` and any directory whose name starts with `.` (which
-covers `.git`, `.secrets`, `.backups`, and the like). Two projects with the
-same `name` are an error.
+skipping any directory whose name starts with `.` — that covers `.git`,
+`.secrets`, `.backups`, and tug's own footprint generally — plus anything the
+repository's `.tugignore` names (1.3). Those two are the only exclusions; tug
+carries no built-in knowledge of `node_modules/` or any other ecosystem's
+conventions. Two projects with the same `name` are an error.
 
 **Repo root detection:** tug works from any subdirectory — it walks up from the
 current working directory to the first directory containing `.git`. If there is
 none, it exits with an error.
 
-### 1.3 `project.json` schema
+### 1.3 `.tugignore`
+
+An optional file at the repo root naming directories discovery never descends
+into. It is read once per run, before any scanning.
+
+```
+# retired services, kept for reference only
+archive
+
+# vendored trees, wherever they turn up
+node_modules
+
+# one specific directory, not the name
+apps/whoami/fixtures
+```
+
+- **A line without a slash is a name**, matched wherever that directory
+  appears. One `node_modules` line covers every one in the tree.
+- **A line with a slash is a path**, relative to the repo root, matched in
+  exactly one place. A leading `/` anchors a root-level directory whose name
+  also occurs deeper — `/archive` is the one at the top and nothing else.
+- **A trailing slash is allowed and means nothing.** Only directories are ever
+  matched, so `archive/` and `archive` are the same pattern.
+- Blank lines are skipped, and a line whose first non-whitespace character is
+  `#` is a comment. There are **no inline comments**, as in `.gitignore`: a
+  `#` anywhere else is an ordinary character, so `archive # retired` names a
+  directory called `archive # retired` and does not ignore `archive`.
+  Surrounding whitespace is not part of a pattern.
+- There are no wildcards, no `**`, and no `!` negation. There is no nested
+  `.tugignore` — the one at the repo root is the whole list.
+
+**Ignored means nonexistent, not hidden.** tug never reads the `project.json`
+files inside an ignored directory, so the projects there do not exist for any
+command: they appear in no listing, no dependency query, and no completion, and
+naming one is an `unknown project` error rather than a refusal. Two
+consequences follow that are easy to be surprised by:
+
+- A project inside an ignored directory whose containers are **still running**
+  is invisible to `ps` and is not acted on by `all <verb>`. Stop a service
+  before retiring it.
+- An active project that declares an `implicitDependencies` entry pointing into
+  an ignored directory is a **dangling edge**, and dangling edges are fatal for
+  the whole repository — every command fails, including `list`, until the
+  manifest or the ignore file is corrected.
+
+A missing `.tugignore` means nothing is ignored. A `.tugignore` that exists but
+cannot be read is an error: silently falling back to "ignore nothing" would
+widen every command to trees the repository asked tug to stay out of.
+
+### 1.4 `project.json` schema
 
 Only the fields below are read; all unknown fields are ignored, so the files
 can carry whatever other tooling metadata they like. The files are plain JSON.
@@ -82,7 +137,7 @@ can carry whatever other tooling metadata they like. The files are plain JSON.
 
 A dependency name that resolves to no known project is an error.
 
-### 1.4 Dependency graph
+### 1.5 Dependency graph
 
 - Dependencies are **transitive**: the effective dependency set of a project is
   the transitive closure of its `implicitDependencies`.
@@ -190,7 +245,7 @@ tug restart <project> [--no-detach] [--dry-run]
 tug pull <project> [--dry-run]
 tug logs <project> [--follow]
 tug all down|restart|pull
-tug list [--all]
+tug list
 tug deps <project> [--reverse] [--transitive] [--json]
 tug ps
 tug configure <project> [--use-defaults]
@@ -300,7 +355,7 @@ deliberately-down services — the batching `up` needs is already a project's ow
 dependency cascade.
 
 - **Selection** is exactly `ps`'s running set (4.6), so `all` and `ps` never
-  disagree. A running archived project is included.
+  disagree.
 - **Order** is direction-aware: `all down` tears down dependents first
   (reverse-topological); `all restart` / `all pull` go dependencies first
   (topological).
@@ -316,12 +371,12 @@ dependency cascade.
 
 ### 4.3 Inspection
 
-#### `list [--all]`
+#### `list`
 
 Prints every discovered project with its direct `implicitDependencies`, sorted
-by name, one line each: `name (dep, dep)`. Archived projects are omitted by
-default; `--all` reveals them, grouped after the active projects under an
-`archived:` header.
+by name, one line each: `name (dep, dep)`. No flags: what counts as discovered
+is settled by `.tugignore` (1.3) before `list` runs, so there is nothing for it
+to reveal or hide.
 
 #### `deps <project> [--reverse] [--transitive] [--json]`
 
@@ -355,9 +410,9 @@ relative to the repo root, columns aligned, sorted by project name.
 Compose derives a project's name from the directory of its first `--file`, so
 entries are matched to discovered projects by **directory name** and displayed
 under the `project.json` name. Compose projects matching no discovered project
-are not listed — `ps` reports on this repository only. A running archived
-project carries a trailing `(archived)` marker. No running projects → empty
-output.
+are not listed — `ps` reports on this repository only, and a project inside an
+ignored directory is not a discovered project even while its containers run
+(1.3). No running projects → empty output.
 
 ### 4.4 Provisioning
 

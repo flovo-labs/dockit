@@ -93,11 +93,7 @@ enum Command {
         verb: AllVerb,
     },
     /// List every project with its direct dependencies
-    List {
-        /// Also show archived projects, in a trailing section
-        #[arg(long)]
-        all: bool,
-    },
+    List,
     /// Query a project's dependency edges in either direction
     ///
     /// Direction: by default `deps` reports the project's dependencies (the
@@ -317,8 +313,8 @@ fn run() -> Result<i32> {
             eprint!("{summary}");
             Ok(exit_code)
         }
-        Command::List { all } => {
-            print!("{}", commands::list(&repo, all));
+        Command::List => {
+            print!("{}", commands::list(&repo));
             Ok(0)
         }
         Command::Deps {
