@@ -142,7 +142,7 @@ tug up bonob --dry-run
 
 | Command | What it does |
 |---|---|
-| `up <project>` | Start the project **and its dependency chain**, in order. `--force`, `--no-detach`, `--wait [--wait-timeout <s>]`, `--dry-run`. |
+| `up <project>` | Start the project **and its dependency chain**, in order. `--no-deps` starts the project alone. `--force`, `--no-detach`, `--wait [--wait-timeout <s>]`, `--dry-run`. |
 | `down <project>` | Stop just the project (no cascade). |
 | `restart <project>` | Bounce just the project: down then up. |
 | `pull <project>` | Pull the project's images (no cascade). |
@@ -165,6 +165,9 @@ environment resolution, provisioning rules, error handling — is in
 
 `configure --use-defaults` and `up --wait` are the CI-facing commands; `deps
 --reverse --transitive --json` lets a pipeline compute the affected-project set.
+When a job only exercises the app itself, `up --wait --no-deps` skips booting
+the dependency chain — `configure` still needs the full cascade to resolve
+variables the dependencies define.
 Install a pinned, checksum-verified binary in a GitHub Actions step:
 
 ```yaml

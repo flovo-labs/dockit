@@ -42,8 +42,8 @@ reading the source or writing about it, use them too.
   (dependencies) by default and **reverse** (dependents) with `--reverse`.
 
 - **Dependency cascade** — the transitive closure of a project's dependency
-  edges. `up` and the provisioning commands act on the whole cascade, not just
-  the named project.
+  edges. The provisioning commands always act on the whole cascade; `up` does
+  by default, but can be asked to start the named project alone.
 
 - **Topological order** — the deterministic ordering tug spawns work in:
   dependencies first, then dependents, ties broken by declaration order.

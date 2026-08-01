@@ -138,6 +138,110 @@ fn up_runs_the_worked_example_chain_in_order() {
 }
 
 #[test]
+fn up_no_deps_starts_only_the_named_project() {
+    // The counterpart of the worked example: --no-deps cuts the
+    // implicitDependencies walk, so bonob starts alone — no traefik, no
+    // navidrome — while the invocation itself is byte-for-byte the leg the
+    // full cascade would have run for bonob.
+    let root = common::fixture("chain");
+    let repo = Repo::discover(&root).unwrap();
+    let mut runner = RecordingRunner::new();
+
+    let options = commands::UpOptions {
+        no_deps: true,
+        ..commands::UpOptions::default()
+    };
+    let code = commands::up(&repo, &plain_env(), "bonob", &options, &mut runner).unwrap();
+
+    assert_eq!(code, 0);
+    let recorded: Vec<Vec<String>> = runner
+        .recorded()
+        .iter()
+        .map(|inv| inv.argv.clone())
+        .collect();
+    assert_eq!(
+        recorded,
+        vec![
+            [
+                "docker",
+                "compose",
+                "--file",
+                "apps/bonob/docker-compose.yml",
+                "--file",
+                "apps/bonob/docker-compose.local.yml",
+                "up",
+                "--yes",
+                "--remove-orphans",
+                "--detach",
+            ]
+            .map(ToString::to_string)
+            .to_vec()
+        ],
+    );
+}
+
+#[test]
+fn up_no_deps_composes_with_the_other_up_flags() {
+    // --no-deps only decides *which* projects run; it must not change the
+    // shape of the leg. The CI-facing combination is --no-deps --wait, so
+    // pair it with --force too and check the argv is exactly what the
+    // cascading form emits for this project.
+    let root = common::fixture("chain");
+    let repo = Repo::discover(&root).unwrap();
+    let mut runner = RecordingRunner::new();
+
+    let options = commands::UpOptions {
+        no_deps: true,
+        force: true,
+        wait_timeout: Some(45),
+        ..commands::UpOptions::default()
+    };
+    commands::up(&repo, &plain_env(), "navidrome", &options, &mut runner).unwrap();
+
+    assert_eq!(runner.recorded().len(), 1);
+    assert_eq!(
+        runner.recorded()[0].argv,
+        [
+            "docker",
+            "compose",
+            "--file",
+            "apps/navidrome/docker-compose.yml",
+            "up",
+            "--yes",
+            "--remove-orphans",
+            "--detach",
+            "--force-recreate",
+            "--wait",
+            "--wait-timeout",
+            "45",
+        ]
+        .map(ToString::to_string),
+    );
+}
+
+#[test]
+fn up_no_deps_still_rejects_a_graph_only_project_named_directly() {
+    // Skipping the cascade does not make a graph-only project startable:
+    // there is still no docker-compose.yml to hand to compose.
+    let root = common::fixture("chain");
+    let repo = Repo::discover(&root).unwrap();
+    let mut runner = RecordingRunner::new();
+
+    let options = commands::UpOptions {
+        no_deps: true,
+        ..commands::UpOptions::default()
+    };
+    let error = commands::up(&repo, &plain_env(), "networks", &options, &mut runner).unwrap_err();
+
+    let message = format!("{error:#}");
+    assert!(
+        message.contains("networks") && message.contains("compose"),
+        "explains the project has no compose file: {message}"
+    );
+    assert!(runner.recorded().is_empty(), "nothing spawned");
+}
+
+#[test]
 fn up_maps_no_detach_and_force_onto_every_invocation_in_the_chain() {
     // --no-detach omits --detach chain-wide; --force maps to compose's
     // --force-recreate chain-wide.

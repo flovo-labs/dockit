@@ -184,7 +184,7 @@ preview and parity-testing tool.
 ## 4. Command reference
 
 ```
-tug up <project> [--force] [--no-detach] [--wait] [--wait-timeout <SECS>] [--dry-run]
+tug up <project> [--no-deps] [--force] [--no-detach] [--wait] [--wait-timeout <SECS>] [--dry-run]
 tug down <project> [--dry-run]
 tug restart <project> [--no-detach] [--dry-run]
 tug pull <project> [--dry-run]
@@ -218,9 +218,9 @@ General rules:
 #### `up <project>`
 
 Starts the project **and all its transitive dependencies**, dependencies first,
-in topological order, sequentially. Graph-only projects in the chain are
-skipped; naming a graph-only project directly is an error. Per compose project
-in the chain:
+in topological order, sequentially — unless `--no-deps` asks for the named
+project alone. Graph-only projects in the chain are skipped; naming a
+graph-only project directly is an error. Per compose project in the chain:
 
 ```
 docker compose --file <files…> up --yes --remove-orphans [--detach] [--force-recreate] [--wait --wait-timeout <secs>]
@@ -234,6 +234,16 @@ docker compose --file <files…> up --yes --remove-orphans [--detach] [--force-r
   `--wait-timeout` defaults to `120` and requires `--wait`. Because compose
   rejects `--wait` in attached mode, `--wait` and `--no-detach` are mutually
   exclusive and rejected up front.
+- `--no-deps` skips the cascade entirely: only the named project is started,
+  one invocation, composing with every flag above. Naming a graph-only project
+  is still an error. tug does not check whether the skipped dependencies are
+  running — like `restart`, dependencies that are down stay down, silently.
+
+  **This is not compose's `--no-deps`.** The flag cuts *tug's* dependency
+  graph — the `implicitDependencies` edges `tug deps <project>` reports — and
+  is deliberately **not** forwarded to `docker compose`, so the project's own
+  `depends_on` services still start normally. A compose project is tug's
+  atomic unit; no tug command starts a subset of one.
 - `--yes` auto-confirms compose's interactive prompts.
 
 #### `down <project>`

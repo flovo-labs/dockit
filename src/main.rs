@@ -33,6 +33,9 @@ enum Command {
     Up {
         /// The project to start
         project: String,
+        /// Start only this project, skipping its dependencies
+        #[arg(long)]
+        no_deps: bool,
         /// Recreate containers even if unchanged (compose --force-recreate)
         #[arg(long)]
         force: bool,
@@ -254,6 +257,7 @@ fn run() -> Result<i32> {
     match cli.command {
         Command::Up {
             project,
+            no_deps,
             force,
             no_detach,
             wait,
@@ -266,6 +270,7 @@ fn run() -> Result<i32> {
                 // `--wait-timeout` defaults to 120 and requires `--wait`, so a
                 // timeout only counts when the user actually asked to wait.
                 wait_timeout: wait.then_some(wait_timeout),
+                no_deps,
             };
             let mut runner = runner_for(dry_run);
             commands::up(&repo, &process_env, &project, &options, runner.as_mut())

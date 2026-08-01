@@ -32,6 +32,41 @@ fn up_dry_run_prints_the_worked_example_lines_and_exits_zero() {
 }
 
 #[test]
+fn up_dry_run_no_deps_prints_only_the_named_project() {
+    // The contrast with the worked example above: same project, one line
+    // instead of three, and no commentary about what was skipped — dry-run
+    // prints invocations and nothing else.
+    let root = common::fixture("chain");
+
+    let output = tug(&root, &["up", "bonob", "--dry-run", "--no-deps"]);
+
+    assert!(output.status.success(), "{output:?}");
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap(),
+        "docker compose --file apps/bonob/docker-compose.yml --file apps/bonob/docker-compose.local.yml up --yes --remove-orphans --detach\n"
+    );
+}
+
+#[test]
+fn up_no_deps_is_the_ci_shape_and_does_not_pass_composes_own_no_deps() {
+    // What docker-host CI will run. tug's --no-deps cuts tug's graph only;
+    // compose's like-named flag must not appear in the invocation.
+    let root = common::fixture("chain");
+
+    let output = tug(&root, &["up", "bonob", "--no-deps", "--wait", "--dry-run"]);
+
+    assert!(output.status.success(), "{output:?}");
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    assert_eq!(stdout.lines().count(), 1, "one leg only: {stdout}");
+    assert!(
+        stdout
+            .trim_end()
+            .ends_with("up --yes --remove-orphans --detach --wait --wait-timeout 120"),
+        "wait flags ride along, no compose --no-deps: {stdout}"
+    );
+}
+
+#[test]
 fn down_and_pull_dry_run_print_their_single_invocation() {
     let root = common::fixture("chain");
 

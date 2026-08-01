@@ -26,6 +26,12 @@ pub struct UpOptions {
     /// is never `Some` alongside `!detach`: compose rejects `--wait` in
     /// attached mode.
     pub wait_timeout: Option<u32>,
+    /// Start the named project alone, skipping the dependency cascade. This
+    /// cuts tug's `implicitDependencies` walk only — the single invocation is
+    /// unchanged, so compose still starts the project's own `depends_on`
+    /// services. Compose's like-named `--no-deps` is deliberately not passed:
+    /// the compose project is tug's atomic unit.
+    pub no_deps: bool,
 }
 
 impl Default for UpOptions {
@@ -34,6 +40,7 @@ impl Default for UpOptions {
             force: false,
             detach: true,
             wait_timeout: None,
+            no_deps: false,
         }
     }
 }
@@ -70,7 +77,7 @@ pub fn up(
     options: &UpOptions,
     runner: &mut dyn Runner,
 ) -> Result<i32> {
-    named_compose_project(repo, name)?;
+    let named = named_compose_project(repo, name)?;
     // Formatted once here so the string outlives `args`, which borrows it below.
     let wait_timeout = options.wait_timeout.map(|secs| secs.to_string());
     let mut args = vec!["up", "--yes", "--remove-orphans"];
@@ -83,7 +90,14 @@ pub fn up(
     if let Some(timeout) = &wait_timeout {
         args.extend(["--wait", "--wait-timeout", timeout.as_str()]);
     }
-    for project in repo.dependency_order(name)? {
+    // `--no-deps` collapses the cascade to the named project, which
+    // `named_compose_project` has already proven is a compose project.
+    let chain = if options.no_deps {
+        vec![named]
+    } else {
+        repo.dependency_order(name)?
+    };
+    for project in chain {
         if !project.has_compose_file {
             continue;
         }
