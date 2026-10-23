@@ -1,7 +1,6 @@
 [book]
 authors = ["Raphael Fleischlin", "Flovo Authors"]
 language = "en"
-multilingual = false
 src = "src"
 title = "Flovo Dockit Documentation"
 description = "Your containers, under control. Docker operations, backups, recovery, and deployment safety in one CLI."
