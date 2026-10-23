@@ -18,7 +18,8 @@ use dockit::vars::{self, HostFacts, TerminalConsole};
 #[derive(Parser)]
 #[command(
     name = "dockit",
-    about = "Orchestrates the repository's Docker Compose projects",
+    about = "Your containers, under control.",
+    long_about = "Docker operations, backups, recovery, and deployment safety in one CLI.",
     version,
     arg_required_else_help = true
 )]

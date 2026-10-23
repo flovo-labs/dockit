@@ -1,7 +1,10 @@
-# dockit
+# Flovo Dockit
 
-**A tiny, opinionated CLI that orchestrates a repository's Docker Compose
-projects** — dependency-ordered startup, per-environment overlays,
+> **Your containers, under control.**
+> Docker operations, backups, recovery, and deployment safety in one CLI.
+
+A tiny, opinionated CLI that orchestrates a repository's Docker Compose
+projects — dependency-ordered startup, per-environment overlays,
 variable/volume/network provisioning, backup/restore, and scaffolding, on top
 of plain `docker compose`.
 
