@@ -5,19 +5,19 @@ use std::collections::BTreeMap;
 
 use anyhow::{Context, Result};
 use clap::{CommandFactory, Parser, Subcommand};
-use tug::backup;
-use tug::commands::{self, DepsOptions, RestartOptions, UpOptions};
-use tug::completion;
-use tug::graph::{Depth, Direction};
-use tug::process::{DryRunRunner, Runner, SystemRunner};
-use tug::provision;
-use tug::repo::Repo;
-use tug::scaffold;
-use tug::vars::{self, HostFacts, TerminalConsole};
+use dockit::backup;
+use dockit::commands::{self, DepsOptions, RestartOptions, UpOptions};
+use dockit::completion;
+use dockit::graph::{Depth, Direction};
+use dockit::process::{DryRunRunner, Runner, SystemRunner};
+use dockit::provision;
+use dockit::repo::Repo;
+use dockit::scaffold;
+use dockit::vars::{self, HostFacts, TerminalConsole};
 
 #[derive(Parser)]
 #[command(
-    name = "tug",
+    name = "dockit",
     about = "Orchestrates the repository's Docker Compose projects",
     version,
     arg_required_else_help = true
@@ -184,7 +184,7 @@ enum Command {
     /// the words typed so far, one per line.
     #[command(name = "__complete", hide = true)]
     Complete {
-        /// The words after `tug`, the current (possibly empty) word last.
+        /// The words after `dockit`, the current (possibly empty) word last.
         #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
         words: Vec<String>,
     },
@@ -209,7 +209,7 @@ impl From<ShellArg> for completion::Shell {
     }
 }
 
-/// The verbs `tug all` fans out over the running set.
+/// The verbs `dockit all` fans out over the running set.
 #[derive(Subcommand)]
 enum AllVerb {
     /// Take down every running project (dependents first)
