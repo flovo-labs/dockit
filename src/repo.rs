@@ -238,9 +238,9 @@ impl Repo {
     }
 }
 
-/// Recursively collect projects, skipping dot-prefixed directories — tug's
+/// Recursively collect projects, skipping dot-prefixed directories — dockit's
 /// own `.git`, `.secrets`, and `.backups` live there — and anything the
-/// repository's `.tugignore` names.
+/// repository's `.dockitignore` names.
 fn scan(
     root: &Path,
     dir: &Path,

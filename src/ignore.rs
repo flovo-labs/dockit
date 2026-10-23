@@ -1,14 +1,17 @@
-//! The `.tugignore` pattern list: the repo-owned half of what discovery
+//! The `.dockitignore` pattern list: the repo-owned half of what discovery
 //! skips.
 
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
 
-/// The file, at the repo root and nowhere else.
-const FILE_NAME: &str = ".tugignore";
+/// The primary ignore file, at the repo root and nowhere else.
+const FILE_NAME: &str = ".dockitignore";
 
-/// The parsed `.tugignore`: the patterns naming directories discovery never
+/// Legacy ignore file for backwards compatibility.
+const LEGACY_FILE_NAME: &str = ".tugignore";
+
+/// The parsed ignore list: the patterns naming directories discovery never
 /// descends into.
 #[derive(Debug, Default)]
 pub struct IgnoreList {
@@ -16,24 +19,33 @@ pub struct IgnoreList {
 }
 
 impl IgnoreList {
-    /// Read the repository's `.tugignore`. An absent file is the empty list —
-    /// the overwhelmingly common case.
+    /// Read the repository's `.dockitignore` (or legacy `.tugignore`). An absent
+    /// file is the empty list — the overwhelmingly common case.
     ///
     /// # Errors
     ///
     /// Fails when the file exists but cannot be read: falling back to "ignore
     /// nothing" would silently widen every command to trees the repository
-    /// asked tug to stay out of.
+    /// asked dockit to stay out of.
     pub fn read(root: &Path) -> Result<Self> {
         let path = root.join(FILE_NAME);
         match std::fs::read_to_string(&path) {
             Ok(text) => Ok(Self::parse(&text)),
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(Self::default()),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                let legacy_path = root.join(LEGACY_FILE_NAME);
+                match std::fs::read_to_string(&legacy_path) {
+                    Ok(text) => Ok(Self::parse(&text)),
+                    Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(Self::default()),
+                    Err(err) => {
+                        Err(err).with_context(|| format!("failed to read {}", legacy_path.display()))
+                    }
+                }
+            }
             Err(error) => Err(error).with_context(|| format!("failed to read {}", path.display())),
         }
     }
 
-    /// Parse the contents of a `.tugignore`, one pattern per line. Blank
+    /// Parse the contents of an ignore file, one pattern per line. Blank
     /// lines and lines opening with `#` declare nothing. A `#` further along
     /// a line is an ordinary character, as in `.gitignore` — there are no
     /// inline comments, so a pattern is always the whole line.
@@ -59,7 +71,7 @@ impl IgnoreList {
     }
 }
 
-/// One `.tugignore` line: a directory name matched wherever it appears, or a
+/// One ignore pattern line: a directory name matched wherever it appears, or a
 /// path matched in exactly one place.
 #[derive(Debug)]
 enum Pattern {

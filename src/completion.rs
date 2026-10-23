@@ -1,5 +1,5 @@
 //! Shell completion: the grammar-walking completer behind the
-//! hidden `tug __complete` subcommand, and the `tug completions <shell>`
+//! hidden `dockit __complete` subcommand, and the `dockit completions <shell>`
 //! wrapper-script generator.
 //!
 //! The engine is deliberately clap-free: the binary introspects its own
@@ -28,7 +28,7 @@ pub struct CommandGrammar {
 
 /// The candidates for the current word given the words typed so far.
 ///
-/// `words` are the tokens after `tug`, the last being the (possibly empty)
+/// `words` are the tokens after `dockit`, the last being the (possibly empty)
 /// word under the cursor; earlier tokens are complete. `repo` is `None` when
 /// completion fires outside a repository — subcommands and flags still
 /// complete, only project names fall away. Returns the matching candidates,
@@ -100,7 +100,7 @@ fn finish(mut pool: Vec<String>, current: &str) -> Vec<String> {
     pool
 }
 
-/// The three shells `tug completions` ships.
+/// The three shells `dockit completions` ships.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Shell {
     Bash,
@@ -109,12 +109,12 @@ pub enum Shell {
 }
 
 /// The completion wrapper script for `shell`: a small, static forwarder that
-/// hands the words on the line to `tug __complete` at TAB-time.
+/// hands the words on the line to `dockit __complete` at TAB-time.
 #[must_use]
 pub fn script(shell: Shell) -> String {
     // Each script is a dumb forwarder: it hands the words on the line, up to
     // and including the (possibly empty) word under the cursor, to
-    // `tug __complete` and feeds the newline-separated reply back to the
+    // `dockit __complete` and feeds the newline-separated reply back to the
     // shell. All grammar logic stays in Rust; the scripts never change as
     // the CLI grows.
     match shell {
@@ -124,32 +124,32 @@ pub fn script(shell: Shell) -> String {
     }
 }
 
-const BASH: &str = r#"_tug() {
+const BASH: &str = r#"_dockit() {
     local IFS=$'\n'
-    # ${COMP_WORDS[@]:1:COMP_CWORD} is the words after "tug" up to and
+    # ${COMP_WORDS[@]:1:COMP_CWORD} is the words after "dockit" up to and
     # including the current one (empty when the cursor sits after a space).
-    COMPREPLY=($(tug __complete "${COMP_WORDS[@]:1:COMP_CWORD}"))
+    COMPREPLY=($(dockit __complete "${COMP_WORDS[@]:1:COMP_CWORD}"))
 }
-complete -F _tug tug
+complete -F _dockit dockit
 "#;
 
-const ZSH: &str = r#"#compdef tug
-_tug() {
+const ZSH: &str = r#"#compdef dockit
+_dockit() {
     local -a candidates
-    # words[2,CURRENT] is the words after "tug" up to and including the
+    # words[2,CURRENT] is the words after "dockit" up to and including the
     # current one; (@) keeps the trailing empty word as its own token.
-    candidates=(${(f)"$(tug __complete "${(@)words[2,CURRENT]}")"})
+    candidates=(${(f)"$(dockit __complete "${(@)words[2,CURRENT]}")"})
     compadd -a -- candidates
 }
-_tug "$@"
+_dockit "$@"
 "#;
 
-const FISH: &str = r#"function __tug_complete
+const FISH: &str = r#"function __dockit_complete
     # -opc: the tokens before the cursor, minus the partial current token,
-    # which -ct returns separately; [2..-1] drops "tug".
+    # which -ct returns separately; [2..-1] drops "dockit".
     set -l tokens (commandline -opc)
     set -l current (commandline -ct)
-    tug __complete $tokens[2..-1] $current
+    dockit __complete $tokens[2..-1] $current
 end
-complete -c tug -f -a '(__tug_complete)'
+complete -c dockit -f -a '(__dockit_complete)'
 "#;

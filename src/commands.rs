@@ -27,10 +27,10 @@ pub struct UpOptions {
     /// attached mode.
     pub wait_timeout: Option<u32>,
     /// Start the named project alone, skipping the dependency cascade. This
-    /// cuts tug's `implicitDependencies` walk only — the single invocation is
+    /// cuts dockit's `implicitDependencies` walk only — the single invocation is
     /// unchanged, so compose still starts the project's own `depends_on`
     /// services. Compose's like-named `--no-deps` is deliberately not passed:
-    /// the compose project is tug's atomic unit.
+    /// the compose project is dockit's atomic unit.
     pub no_deps: bool,
 }
 
@@ -337,7 +337,7 @@ pub fn ps(
     Ok((exit_code, listing))
 }
 
-/// The verbs `tug all` fans out over the running set. No `up`:
+/// The verbs `dockit all` fans out over the running set. No `up`:
 /// over the running set it is a near no-op, and over every project it would
 /// start deliberately-down services — the batching `up` needs is already a
 /// project's own dependency cascade.
