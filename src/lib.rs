@@ -1,4 +1,4 @@
-//! `tug` — orchestration on top of plain `docker compose`.
+//! `dockit` — orchestration on top of plain `docker compose`.
 //!
 //! Module layout:
 //!
@@ -6,8 +6,8 @@
 //!   archives wired natively through child stdio.
 //! - [`commands`] — the lifecycle commands: `up`/`down`/`pull`/`list`/`deps`,
 //!   built on the seam so `--dry-run` and tests are adapters.
-//! - [`completion`] — shell completion: the `tug __complete` grammar-walker
-//!   and the `tug completions <shell>` script generator.
+//! - [`completion`] — shell completion: the `dockit __complete` grammar-walker
+//!   and the `dockit completions <shell>` script generator.
 //! - [`env`] — the environment model: env name, compose file layering,
 //!   dotenv merge, persistence files.
 //! - [`process`] — the process-spawn seam: every external `docker` invocation
@@ -16,7 +16,7 @@
 //!   `create-networks`, and the `configure` orchestrator.
 //! - [`repo`] — the repository model: root detection, project discovery,
 //!   `project.json` parsing.
-//! - [`ignore`] — the `.tugignore` pattern list: which directories discovery
+//! - [`ignore`] — the `.dockitignore` pattern list: which directories discovery
 //!   never descends into.
 //! - [`graph`] — the dependency graph: transitive closure, cycle detection,
 //!   deterministic ordering.
