@@ -1,6 +1,10 @@
+<p align="center">
+  <img src="assets/icon.png" width="128" alt="Flovo Dockit Logo" />
+</p>
+
 # Flovo Dockit
 
-> **Your containers, under control.**
+> **Your containers, under control.**  
 > Docker operations, backups, recovery, and deployment safety in one CLI.
 
 A tiny, opinionated CLI that orchestrates a repository's Docker Compose
@@ -202,6 +206,10 @@ The tests need no docker: every external effect goes through a process-spawn
 assert exact argv sequences against fixture repositories, and `--dry-run` is
 just a printing implementation of the same seam. See
 [`CONTEXT.md`](CONTEXT.md) for the vocabulary.
+
+## Credits & Acknowledgments
+
+Flovo Dockit is built upon the foundation of [**tug**](https://github.com/raeffs/tug), originally designed and developed by [**Raphael Fleischlin**](https://github.com/raeffs). We extend our deep gratitude to Raphael for the elegant design philosophy, process-spawn seam architecture, and rock-solid Compose orchestration fundamentals. Flovo Dockit extends and evolves this foundation into a unified suite for Docker Compose operations, incremental backups, and deployment safety.
 
 ## License
 

@@ -1,0 +1,18 @@
+[book]
+authors = ["Raphael Fleischlin", "Flovo Authors"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Flovo Dockit Documentation"
+description = "Your containers, under control. Docker operations, backups, recovery, and deployment safety in one CLI."
+
+[output.html]
+git-repository-url = "https://github.com/raeffs/tug"
+site-url = "/dockit/"
+preferred-dark-theme = "coal"
+default-theme = "coal"
+mathjax-support = false
+
+[output.html.fold]
+enable = true
+level = 1
