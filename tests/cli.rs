@@ -1,4 +1,4 @@
-//! End-to-end tests of the `tug` binary itself: argument wiring, repo
+//! End-to-end tests of the `dockit` binary itself: argument wiring, repo
 //! discovery from the working directory, exit codes. Only docker-free paths
 //! (`--dry-run`, `list`, usage errors) run here.
 
@@ -6,8 +6,8 @@ mod common;
 
 use std::process::Command;
 
-fn tug(cwd: &std::path::Path, args: &[&str]) -> std::process::Output {
-    Command::new(env!("CARGO_BIN_EXE_tug"))
+fn dockit(cwd: &std::path::Path, args: &[&str]) -> std::process::Output {
+    Command::new(env!("CARGO_BIN_EXE_dockit"))
         .args(args)
         .current_dir(cwd)
         .env_remove("CI")
@@ -20,7 +20,7 @@ fn tug(cwd: &std::path::Path, args: &[&str]) -> std::process::Output {
 fn up_dry_run_prints_the_worked_example_lines_and_exits_zero() {
     let root = common::fixture("chain");
 
-    let output = tug(&root, &["up", "bonob", "--dry-run"]);
+    let output = dockit(&root, &["up", "bonob", "--dry-run"]);
 
     assert!(output.status.success(), "{output:?}");
     assert_eq!(
@@ -38,7 +38,7 @@ fn up_dry_run_no_deps_prints_only_the_named_project() {
     // prints invocations and nothing else.
     let root = common::fixture("chain");
 
-    let output = tug(&root, &["up", "bonob", "--dry-run", "--no-deps"]);
+    let output = dockit(&root, &["up", "bonob", "--dry-run", "--no-deps"]);
 
     assert!(output.status.success(), "{output:?}");
     assert_eq!(
@@ -49,11 +49,11 @@ fn up_dry_run_no_deps_prints_only_the_named_project() {
 
 #[test]
 fn up_no_deps_is_the_ci_shape_and_does_not_pass_composes_own_no_deps() {
-    // What docker-host CI will run. tug's --no-deps cuts tug's graph only;
+    // What docker-host CI will run. dockit's --no-deps cuts dockit's graph only;
     // compose's like-named flag must not appear in the invocation.
     let root = common::fixture("chain");
 
-    let output = tug(&root, &["up", "bonob", "--no-deps", "--wait", "--dry-run"]);
+    let output = dockit(&root, &["up", "bonob", "--no-deps", "--wait", "--dry-run"]);
 
     assert!(output.status.success(), "{output:?}");
     let stdout = String::from_utf8(output.stdout).unwrap();
@@ -70,8 +70,8 @@ fn up_no_deps_is_the_ci_shape_and_does_not_pass_composes_own_no_deps() {
 fn down_and_pull_dry_run_print_their_single_invocation() {
     let root = common::fixture("chain");
 
-    let down = tug(&root, &["down", "bonob", "--dry-run"]);
-    let pull = tug(&root, &["pull", "navidrome", "--dry-run"]);
+    let down = dockit(&root, &["down", "bonob", "--dry-run"]);
+    let pull = dockit(&root, &["pull", "navidrome", "--dry-run"]);
 
     assert!(down.status.success(), "{down:?}");
     assert_eq!(
@@ -89,7 +89,7 @@ fn down_and_pull_dry_run_print_their_single_invocation() {
 fn restart_dry_run_prints_the_down_leg_then_the_up_leg() {
     let root = common::fixture("chain");
 
-    let output = tug(&root, &["restart", "bonob", "--dry-run"]);
+    let output = dockit(&root, &["restart", "bonob", "--dry-run"]);
 
     assert!(output.status.success(), "{output:?}");
     assert_eq!(
@@ -103,7 +103,7 @@ fn restart_dry_run_prints_the_down_leg_then_the_up_leg() {
 fn restart_dry_run_honors_no_detach() {
     let root = common::fixture("chain");
 
-    let output = tug(&root, &["restart", "navidrome", "--no-detach", "--dry-run"]);
+    let output = dockit(&root, &["restart", "navidrome", "--no-detach", "--dry-run"]);
 
     assert!(output.status.success(), "{output:?}");
     assert_eq!(
@@ -118,7 +118,7 @@ fn up_dry_run_honors_flags_and_works_from_a_subdirectory() {
     let root = common::fixture("chain");
 
     // The CLI works from any subdirectory of the repository.
-    let output = tug(
+    let output = dockit(
         &root.join("apps/navidrome"),
         &["up", "navidrome", "--force", "--no-detach", "--dry-run"],
     );
@@ -132,11 +132,11 @@ fn up_dry_run_honors_flags_and_works_from_a_subdirectory() {
 
 #[test]
 fn up_dry_run_wait_appends_wait_and_the_default_timeout() {
-    // `tug up <app> --wait` blocks until healthy — every leg gains
+    // `dockit up <app> --wait` blocks until healthy — every leg gains
     // `--wait --wait-timeout 120`.
     let root = common::fixture("chain");
 
-    let output = tug(&root, &["up", "bonob", "--wait", "--dry-run"]);
+    let output = dockit(&root, &["up", "bonob", "--wait", "--dry-run"]);
 
     assert!(output.status.success(), "{output:?}");
     assert_eq!(
@@ -152,7 +152,7 @@ fn up_dry_run_wait_honors_a_custom_timeout() {
     // --wait-timeout <secs> overrides the default 120.
     let root = common::fixture("chain");
 
-    let output = tug(
+    let output = dockit(
         &root,
         &[
             "up",
@@ -173,12 +173,12 @@ fn up_dry_run_wait_honors_a_custom_timeout() {
 
 #[test]
 fn up_wait_and_no_detach_are_mutually_exclusive() {
-    // compose rejects --wait in attached mode, so tug refuses the
+    // compose rejects --wait in attached mode, so dockit refuses the
     // combination up front with a clear error rather than spawning a doomed
     // compose call.
     let root = common::fixture("chain");
 
-    let output = tug(
+    let output = dockit(
         &root,
         &["up", "bonob", "--wait", "--no-detach", "--dry-run"],
     );
@@ -197,7 +197,7 @@ fn up_wait_timeout_requires_wait() {
     // it alone is an error rather than a silent no-op.
     let root = common::fixture("chain");
 
-    let output = tug(&root, &["up", "bonob", "--wait-timeout", "45", "--dry-run"]);
+    let output = dockit(&root, &["up", "bonob", "--wait-timeout", "45", "--dry-run"]);
 
     assert!(!output.status.success(), "{output:?}");
     let stderr = String::from_utf8(output.stderr).unwrap();
@@ -208,7 +208,7 @@ fn up_wait_timeout_requires_wait() {
 fn list_prints_the_projects_sorted_by_name() {
     let root = common::fixture("chain");
 
-    let output = tug(&root, &["list"]);
+    let output = dockit(&root, &["list"]);
 
     assert!(output.status.success(), "{output:?}");
     assert_eq!(
@@ -226,7 +226,7 @@ fn naming_a_project_inside_an_ignored_directory_reports_an_unknown_project() {
     // hidden: the name is not merely absent from listings, it is not a name.
     let root = common::fixture("ignored");
 
-    let output = tug(&root, &["up", "retired"]);
+    let output = dockit(&root, &["up", "retired"]);
 
     assert!(!output.status.success(), "{output:?}");
     let stderr = String::from_utf8(output.stderr).unwrap();
@@ -240,7 +240,7 @@ fn naming_a_project_inside_an_ignored_directory_reports_an_unknown_project() {
 fn deps_defaults_to_forward_direct_in_list_style() {
     let root = common::fixture("deps");
 
-    let output = tug(&root, &["deps", "bonob"]);
+    let output = dockit(&root, &["deps", "bonob"]);
 
     assert!(output.status.success(), "{output:?}");
     assert_eq!(
@@ -254,7 +254,7 @@ fn deps_reverse_transitive_json_is_the_ci_shape() {
     // The exact invocation CI issues per changed app: reverse-transitive JSON.
     let root = common::fixture("deps");
 
-    let output = tug(
+    let output = dockit(
         &root,
         &["deps", "networks", "--reverse", "--transitive", "--json"],
     );
@@ -272,7 +272,7 @@ fn deps_of_a_leaf_is_empty_and_exits_zero() {
     // "nothing depends on it" is a success with an empty set, not an error.
     let root = common::fixture("deps");
 
-    let output = tug(&root, &["deps", "bonob", "--reverse"]);
+    let output = dockit(&root, &["deps", "bonob", "--reverse"]);
 
     assert!(output.status.success(), "{output:?}");
     assert_eq!(String::from_utf8(output.stdout).unwrap(), "bonob\n");
@@ -282,7 +282,7 @@ fn deps_of_a_leaf_is_empty_and_exits_zero() {
 fn deps_of_an_unknown_project_is_a_nonzero_exit_naming_the_valid_projects() {
     let root = common::fixture("deps");
 
-    let output = tug(&root, &["deps", "ghost"]);
+    let output = dockit(&root, &["deps", "ghost"]);
 
     assert!(!output.status.success(), "{output:?}");
     let stderr = String::from_utf8(output.stderr).unwrap();
@@ -294,7 +294,7 @@ fn deps_of_an_unknown_project_is_a_nonzero_exit_naming_the_valid_projects() {
 fn an_unknown_project_is_a_nonzero_exit_naming_the_valid_projects() {
     let root = common::fixture("chain");
 
-    let output = tug(&root, &["up", "sonarr", "--dry-run"]);
+    let output = dockit(&root, &["up", "sonarr", "--dry-run"]);
 
     assert!(!output.status.success());
     let stderr = String::from_utf8(output.stderr).unwrap();
@@ -303,10 +303,10 @@ fn an_unknown_project_is_a_nonzero_exit_naming_the_valid_projects() {
 }
 
 #[test]
-fn a_bare_tug_prints_the_usage_summary() {
+fn a_bare_dockit_prints_the_usage_summary() {
     let root = common::fixture("chain");
 
-    let output = tug(&root, &[]);
+    let output = dockit(&root, &[]);
 
     // clap's arg_required_else_help exits non-zero with usage on stderr.
     assert!(!output.status.success());
@@ -335,7 +335,7 @@ fn a_bare_tug_prints_the_usage_summary() {
 fn new_scaffolds_an_app_and_a_collision_is_a_nonzero_exit() {
     let root = common::fixture("chain");
 
-    let created = tug(&root, &["new", "testapp"]);
+    let created = dockit(&root, &["new", "testapp"]);
 
     assert!(created.status.success(), "{created:?}");
     for file in [
@@ -351,7 +351,7 @@ fn new_scaffolds_an_app_and_a_collision_is_a_nonzero_exit() {
     }
 
     // A name collision is an error before any file is written.
-    let collided = tug(&root, &["new", "Testapp"]);
+    let collided = dockit(&root, &["new", "Testapp"]);
     assert!(!collided.status.success(), "{collided:?}");
     let stderr = String::from_utf8(collided.stderr).unwrap();
     assert!(stderr.contains("testapp"), "{stderr}");
@@ -362,7 +362,7 @@ fn backup_commands_are_wired_and_reject_unknown_projects_before_docker() {
     let root = common::fixture("backup");
 
     for args in [["backup-volumes", "sonarr"], ["restore-volumes", "sonarr"]] {
-        let output = tug(&root, &args);
+        let output = dockit(&root, &args);
         assert!(!output.status.success(), "{args:?}: {output:?}");
         let stderr = String::from_utf8(output.stderr).unwrap();
         assert!(stderr.contains("unknown project"), "{args:?}: {stderr}");
@@ -374,7 +374,7 @@ fn backup_commands_are_wired_and_reject_unknown_projects_before_docker() {
 fn restore_volumes_missing_archives_fail_end_to_end_before_docker() {
     let root = common::fixture("backup");
 
-    let output = tug(&root, &["restore-volumes", "app", "--source-path", "void"]);
+    let output = dockit(&root, &["restore-volumes", "app", "--source-path", "void"]);
 
     assert!(!output.status.success(), "{output:?}");
     let stderr = String::from_utf8(output.stderr).unwrap();
@@ -390,7 +390,7 @@ fn logs_is_wired_and_rejects_graph_only_and_unknown_projects_before_docker() {
     // `logs` command is wired, reached, and applying the shared guard.
     let root = common::fixture("chain");
 
-    let graph_only = tug(&root, &["logs", "networks"]);
+    let graph_only = dockit(&root, &["logs", "networks"]);
     assert!(!graph_only.status.success(), "{graph_only:?}");
     let stderr = String::from_utf8(graph_only.stderr).unwrap();
     assert!(
@@ -398,7 +398,7 @@ fn logs_is_wired_and_rejects_graph_only_and_unknown_projects_before_docker() {
         "{stderr}"
     );
 
-    let unknown = tug(&root, &["logs", "sonarr"]);
+    let unknown = dockit(&root, &["logs", "sonarr"]);
     assert!(!unknown.status.success(), "{unknown:?}");
     let stderr = String::from_utf8(unknown.stderr).unwrap();
     assert!(stderr.contains("unknown project"), "{stderr}");
@@ -416,7 +416,7 @@ fn provisioning_commands_are_wired_and_reject_unknown_projects_before_docker() {
         ["create-networks", "sonarr"],
         ["configure", "sonarr"],
     ] {
-        let output = tug(&root, &args);
+        let output = dockit(&root, &args);
         assert!(!output.status.success(), "{args:?}: {output:?}");
         let stderr = String::from_utf8(output.stderr).unwrap();
         assert!(stderr.contains("unknown project"), "{args:?}: {stderr}");
@@ -428,7 +428,7 @@ fn provisioning_commands_are_wired_and_reject_unknown_projects_before_docker() {
 fn create_variables_use_defaults_runs_end_to_end_without_a_terminal() {
     let root = common::fixture("variables");
 
-    let output = Command::new(env!("CARGO_BIN_EXE_tug"))
+    let output = Command::new(env!("CARGO_BIN_EXE_dockit"))
         .args(["create-variables", "text", "--use-defaults"])
         .current_dir(&root)
         .env_remove("CI")
@@ -448,12 +448,12 @@ fn create_variables_use_defaults_runs_end_to_end_without_a_terminal() {
 
 #[test]
 fn all_subcommand_is_wired_with_its_three_verbs() {
-    // Bare `tug all` needs a verb — clap prints help listing the
+    // Bare `dockit all` needs a verb — clap prints help listing the
     // three bulk verbs. Docker-free (no verb is ever run), and proves the
     // `all` command and its verbs are wired.
     let root = common::fixture("chain");
 
-    let output = tug(&root, &["all"]);
+    let output = dockit(&root, &["all"]);
 
     assert!(!output.status.success(), "{output:?}");
     let stderr = String::from_utf8(output.stderr).unwrap();
@@ -464,23 +464,23 @@ fn all_subcommand_is_wired_with_its_three_verbs() {
 
 #[test]
 fn completions_prints_the_bash_wrapper_script() {
-    // `tug completions bash` emits the wrapper to stdout. Repo-free
+    // `dockit completions bash` emits the wrapper to stdout. Repo-free
     // (script generation never touches discovery), so any cwd works.
     let root = common::fixture("basic");
 
-    let output = tug(&root, &["completions", "bash"]);
+    let output = dockit(&root, &["completions", "bash"]);
 
     assert!(output.status.success(), "{output:?}");
     let stdout = String::from_utf8(output.stdout).unwrap();
-    assert!(stdout.contains("complete -F _tug tug"), "{stdout}");
-    assert!(stdout.contains("tug __complete"), "{stdout}");
+    assert!(stdout.contains("complete -F _dockit dockit"), "{stdout}");
+    assert!(stdout.contains("dockit __complete"), "{stdout}");
 }
 
 #[test]
 fn completions_rejects_an_unknown_shell() {
     let root = common::fixture("basic");
 
-    let output = tug(&root, &["completions", "powershell"]);
+    let output = dockit(&root, &["completions", "powershell"]);
 
     assert!(!output.status.success(), "{output:?}");
     let stderr = String::from_utf8(output.stderr).unwrap();
@@ -493,7 +493,7 @@ fn complete_lists_the_real_subcommands_and_hides_its_own_helper() {
     // appears, the hidden `__complete` never does.
     let root = common::fixture("listing");
 
-    let output = tug(&root, &["__complete", ""]);
+    let output = dockit(&root, &["__complete", ""]);
 
     assert!(output.status.success(), "{output:?}");
     let stdout = String::from_utf8(output.stdout).unwrap();
@@ -508,7 +508,7 @@ fn complete_lists_the_real_subcommands_and_hides_its_own_helper() {
 fn complete_offers_discovered_project_names_after_a_project_verb() {
     let root = common::fixture("listing");
 
-    let output = tug(&root, &["__complete", "up", "wh"]);
+    let output = dockit(&root, &["__complete", "up", "wh"]);
 
     assert!(output.status.success(), "{output:?}");
     assert_eq!(String::from_utf8(output.stdout).unwrap(), "whoami\n");
@@ -520,7 +520,7 @@ fn complete_stays_silent_and_successful_outside_a_repository() {
     // subcommands (not project names), never an error on stderr.
     let dir = std::env::temp_dir();
 
-    let output = tug(&dir, &["__complete", "up", ""]);
+    let output = dockit(&dir, &["__complete", "up", ""]);
 
     assert!(output.status.success(), "{output:?}");
     assert!(output.stdout.is_empty(), "{output:?}");
