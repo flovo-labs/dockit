@@ -3,8 +3,8 @@
 
 mod common;
 
-use tug::repo::Repo;
-use tug::scaffold::{Casings, new_project};
+use dockit::repo::Repo;
+use dockit::scaffold::{Casings, new_project};
 
 #[test]
 fn a_kebab_input_normalizes_into_all_three_casings() {

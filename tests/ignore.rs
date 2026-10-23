@@ -1,9 +1,9 @@
-//! The `.tugignore` pattern list: what each line means and which directories
+//! The ignore pattern list: what each line means and which directories
 //! it matches. Paths are always relative to the repo root.
 
 use std::path::Path;
 
-use tug::ignore::IgnoreList;
+use dockit::ignore::IgnoreList;
 
 #[test]
 fn a_bare_name_ignores_that_directory_at_any_depth() {
