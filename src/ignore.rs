@@ -36,9 +36,8 @@ impl IgnoreList {
                 match std::fs::read_to_string(&legacy_path) {
                     Ok(text) => Ok(Self::parse(&text)),
                     Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(Self::default()),
-                    Err(err) => {
-                        Err(err).with_context(|| format!("failed to read {}", legacy_path.display()))
-                    }
+                    Err(err) => Err(err)
+                        .with_context(|| format!("failed to read {}", legacy_path.display())),
                 }
             }
             Err(error) => Err(error).with_context(|| format!("failed to read {}", path.display())),
