@@ -1,14 +1,14 @@
 //! Tests for the shell-completion engine: the grammar-walking
-//! completer behind `tug __complete`, driven against fixture repos with a
+//! completer behind `dockit __complete`, driven against fixture repos with a
 //! hand-built grammar. The clap-introspection wiring is covered end-to-end
 //! in `cli.rs`.
 
 mod common;
 
-use tug::completion::{self, CommandGrammar, Shell};
-use tug::repo::Repo;
+use dockit::completion::{self, CommandGrammar, Shell};
+use dockit::repo::Repo;
 
-/// A small stand-in for tug's real grammar: a project-taking leaf with
+/// A small stand-in for dockit's real grammar: a project-taking leaf with
 /// flags (`up`), a bare leaf (`list`), another project leaf (`logs`), and
 /// the nested `all` umbrella. Independent of clap so the engine is tested
 /// on its own terms.
@@ -158,27 +158,27 @@ fn outside_a_repo_subcommands_still_complete_but_project_names_fall_away() {
 }
 
 #[test]
-fn the_bash_script_wires_a_completion_function_to_tug_complete() {
+fn the_bash_script_wires_a_completion_function_to_dockit_complete() {
     let script = completion::script(Shell::Bash);
 
     assert!(script.contains("complete -F"), "{script}");
-    assert!(script.contains("tug __complete"), "{script}");
-    assert!(script.trim_end().ends_with("tug"), "{script}");
+    assert!(script.contains("dockit __complete"), "{script}");
+    assert!(script.trim_end().ends_with("dockit"), "{script}");
 }
 
 #[test]
-fn the_zsh_script_is_an_autoloaded_compdef_calling_tug_complete() {
+fn the_zsh_script_is_an_autoloaded_compdef_calling_dockit_complete() {
     let script = completion::script(Shell::Zsh);
 
-    assert!(script.starts_with("#compdef tug"), "{script}");
-    assert!(script.contains("tug __complete"), "{script}");
+    assert!(script.starts_with("#compdef dockit"), "{script}");
+    assert!(script.contains("dockit __complete"), "{script}");
     assert!(script.contains("compadd"), "{script}");
 }
 
 #[test]
-fn the_fish_script_registers_a_completion_calling_tug_complete() {
+fn the_fish_script_registers_a_completion_calling_dockit_complete() {
     let script = completion::script(Shell::Fish);
 
-    assert!(script.contains("complete -c tug"), "{script}");
-    assert!(script.contains("tug __complete"), "{script}");
+    assert!(script.contains("complete -c dockit"), "{script}");
+    assert!(script.contains("dockit __complete"), "{script}");
 }

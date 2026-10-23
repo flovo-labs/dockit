@@ -5,7 +5,7 @@
 //! the raised signal are process-wide, so the test must not share a process
 //! with other `SystemRunner` tests.
 
-use tug::process::{Invocation, Runner, SystemRunner};
+use dockit::process::{Invocation, Runner, SystemRunner};
 
 unsafe extern "C" {
     fn kill(pid: i32, sig: i32) -> i32;

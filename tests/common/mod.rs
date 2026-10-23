@@ -14,7 +14,7 @@ pub fn fixture(name: &str) -> PathBuf {
         .join(name);
     let id = NEXT_FIXTURE_ID.fetch_add(1, Ordering::Relaxed);
     let target =
-        std::env::temp_dir().join(format!("tug-fixture-{}-{id}-{name}", std::process::id()));
+        std::env::temp_dir().join(format!("dockit-fixture-{}-{id}-{name}", std::process::id()));
     if target.exists() {
         std::fs::remove_dir_all(&target).unwrap();
     }
