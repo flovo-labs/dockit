@@ -4,7 +4,7 @@
 
 mod common;
 
-use tug::repo::Repo;
+use dockit::repo::Repo;
 
 #[test]
 fn dependency_order_is_topological_with_declaration_order_ties() {
