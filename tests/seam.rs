@@ -2,7 +2,7 @@
 //! invocation flows through the `Runner` trait as an `Invocation` value, so a
 //! test can record the exact argv sequence a command would spawn.
 
-use tug::process::{Invocation, Outcome, RecordingRunner, Runner, SystemRunner, render};
+use dockit::process::{Invocation, Outcome, RecordingRunner, Runner, SystemRunner, render};
 
 #[test]
 fn render_produces_the_one_line_command_rendering() {
@@ -119,7 +119,7 @@ fn system_runner_gives_the_child_exactly_the_invocation_env() {
 
 /// A fresh scratch directory unique to this test process.
 fn temp_dir(name: &str) -> std::path::PathBuf {
-    let dir = std::env::temp_dir().join(format!("tug-seam-{}-{name}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("dockit-seam-{}-{name}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     dir
 }

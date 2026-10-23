@@ -6,10 +6,10 @@ mod common;
 
 use std::collections::BTreeMap;
 
-use tug::process::{Invocation, Outcome, Runner, StdoutSink};
-use tug::provision;
-use tug::repo::Repo;
-use tug::vars::{Console, HostFacts};
+use dockit::process::{Invocation, Outcome, Runner, StdoutSink};
+use dockit::provision;
+use dockit::repo::Repo;
+use dockit::vars::{Console, HostFacts};
 
 /// A console that must never be asked anything — `configure --use-defaults`
 /// is the CI path — but records warnings.
@@ -74,7 +74,7 @@ impl Runner for QueryRunner {
     }
 }
 
-/// A process environment with nothing tug-relevant set (env name `local`).
+/// A process environment with nothing dockit-relevant set (env name `local`).
 fn plain_env() -> BTreeMap<String, String> {
     BTreeMap::new()
 }

@@ -6,8 +6,8 @@ mod common;
 use std::collections::{BTreeMap, VecDeque};
 use std::path::Path;
 
-use tug::repo::Repo;
-use tug::vars::{Console, HostFacts, create_variables, docker_gid_from_group};
+use dockit::repo::Repo;
+use dockit::vars::{Console, HostFacts, create_variables, docker_gid_from_group};
 
 /// The scripted side of the line-IO boundary: answers are dealt in order,
 /// every prompt and warning is recorded for assertions.

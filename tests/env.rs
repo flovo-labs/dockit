@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 
 use std::path::{Path, PathBuf};
 
-use tug::env::{append_env_local, compose_files, environment_name, merged_env, write_secret};
+use dockit::env::{append_env_local, compose_files, environment_name, merged_env, write_secret};
 
 fn process_env(vars: &[(&str, &str)]) -> BTreeMap<String, String> {
     vars.iter()

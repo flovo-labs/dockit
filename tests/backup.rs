@@ -7,9 +7,9 @@ mod common;
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use tug::backup;
-use tug::process::{Invocation, Outcome, Runner, StdinSource, StdoutSink};
-use tug::repo::Repo;
+use dockit::backup;
+use dockit::process::{Invocation, Outcome, Runner, StdinSource, StdoutSink};
+use dockit::repo::Repo;
 
 /// A runner that records every invocation and, like the real docker child
 /// writing an archive, deposits marker bytes into a file-wired stdout.
@@ -52,7 +52,7 @@ impl Runner for ArchivingRunner {
     }
 }
 
-/// A process environment with nothing tug-relevant set (env name `local`).
+/// A process environment with nothing dockit-relevant set (env name `local`).
 fn plain_env() -> BTreeMap<String, String> {
     BTreeMap::new()
 }

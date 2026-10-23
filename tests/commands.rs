@@ -6,10 +6,10 @@ mod common;
 
 use std::collections::BTreeMap;
 
-use tug::commands::{self, DepsOptions};
-use tug::graph::{Depth, Direction};
-use tug::process::{DryRunRunner, Invocation, Outcome, RecordingRunner, Runner, StdoutSink};
-use tug::repo::Repo;
+use dockit::commands::{self, DepsOptions};
+use dockit::graph::{Depth, Direction};
+use dockit::process::{DryRunRunner, Invocation, Outcome, RecordingRunner, Runner, StdoutSink};
+use dockit::repo::Repo;
 
 /// A runner that answers captured-stdout queries with the given text and
 /// records every invocation, like the docker CLI answering `compose ls`.
@@ -59,7 +59,7 @@ impl Runner for FailingRunner {
     }
 }
 
-/// A process environment with nothing tug-relevant set (env name `local`).
+/// A process environment with nothing dockit-relevant set (env name `local`).
 fn plain_env() -> BTreeMap<String, String> {
     BTreeMap::new()
 }
@@ -269,7 +269,7 @@ fn up_maps_no_detach_and_force_onto_every_invocation_in_the_chain() {
 #[test]
 fn up_wait_appends_wait_and_the_default_timeout_to_every_leg() {
     // --wait blocks until healthy, appending `--wait --wait-timeout <n>` per
-    // compose up. tug runs one compose up per project in dependency order, so
+    // compose up. dockit runs one compose up per project in dependency order, so
     // --wait applies to each leg — every dependency waits healthy before the
     // next starts. The flags land after --detach/--force-recreate.
     let root = common::fixture("chain");
@@ -1168,7 +1168,7 @@ fn compose(tail: &[&str]) -> Vec<String> {
 
 #[test]
 fn all_pull_fans_out_one_pull_per_running_project_in_topological_order() {
-    // `tug all pull` pulls every RUNNING project's images, in
+    // `dockit all pull` pulls every RUNNING project's images, in
     // topological order (dependencies first). chain running set
     // {bonob, navidrome, traefik} orders as traefik, navidrome, bonob.
     let root = common::fixture("chain");
@@ -1218,7 +1218,7 @@ fn all_pull_fans_out_one_pull_per_running_project_in_topological_order() {
 
 #[test]
 fn all_down_tears_down_the_running_set_in_reverse_topological_order() {
-    // `tug all down` takes down every running project, dependents
+    // `dockit all down` takes down every running project, dependents
     // before dependencies (the mirror of up) — bonob, navidrome, traefik.
     let root = common::fixture("chain");
     let repo = Repo::discover(&root).unwrap();
@@ -1267,7 +1267,7 @@ fn all_down_tears_down_the_running_set_in_reverse_topological_order() {
 
 #[test]
 fn all_restart_bounces_the_running_set_in_topological_order_detached() {
-    // `tug all restart` bounces every running project — a
+    // `dockit all restart` bounces every running project — a
     // non-cascading down leg then up leg each, dependencies first
     // (traefik, navidrome, bonob), always detached (no per-project attach
     // makes sense across a batch).

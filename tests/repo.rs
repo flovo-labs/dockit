@@ -5,7 +5,7 @@ mod common;
 
 use std::path::Path;
 
-use tug::repo::{NetworkSpec, Repo, VariableKind, VariableSpec, VolumeSpec, find_repo_root};
+use dockit::repo::{NetworkSpec, Repo, VariableKind, VariableSpec, VolumeSpec, find_repo_root};
 
 #[test]
 fn repo_root_is_found_by_walking_up_to_the_git_marker() {
@@ -85,10 +85,10 @@ fn a_dependency_on_a_project_inside_an_ignored_directory_is_an_error() {
 }
 
 #[test]
-fn dot_directories_are_the_only_skip_tug_makes_on_its_own() {
-    // tug carries no knowledge of anyone's ecosystem: node_modules is an
+fn dot_directories_are_the_only_skip_dockit_makes_on_its_own() {
+    // dockit carries no knowledge of anyone's ecosystem: node_modules is an
     // ordinary directory unless the repository says otherwise in a
-    // .tugignore. Dot-directories stay unconditional because that is tug
+    // .dockitignore. Dot-directories stay unconditional because that is dockit
     // shielding itself from .git, .secrets, and .backups.
     let root = temp_dir("no-builtin-skips");
     std::fs::create_dir_all(root.join(".git")).unwrap();
@@ -113,9 +113,23 @@ fn dot_directories_are_the_only_skip_tug_makes_on_its_own() {
 }
 
 #[test]
+fn an_unreadable_dockitignore_is_an_error() {
+    let root = temp_dir("unreadable-dockitignore");
+    std::fs::create_dir_all(root.join(".git")).unwrap();
+    std::fs::create_dir_all(root.join(".dockitignore")).unwrap();
+
+    let message = format!("{:#}", Repo::discover(&root).unwrap_err());
+
+    assert!(
+        message.contains(".dockitignore"),
+        "unexpected error: {message}"
+    );
+}
+
+#[test]
 fn an_unreadable_tugignore_is_an_error() {
     // Falling back to "ignore nothing" would silently widen every command to
-    // trees the repository asked tug to stay out of, so an unreadable file
+    // trees the repository asked dockit to stay out of, so an unreadable file
     // has to fail loudly. A directory stands in for one: it exists, and
     // reading it as a file cannot succeed.
     let root = temp_dir("unreadable-tugignore");
@@ -306,7 +320,7 @@ fn variable(
 
 /// A fresh scratch directory unique to this test process.
 fn temp_dir(name: &str) -> std::path::PathBuf {
-    let dir = std::env::temp_dir().join(format!("tug-repo-{}-{name}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("dockit-repo-{}-{name}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     dir
 }

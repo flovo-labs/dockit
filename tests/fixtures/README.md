@@ -3,7 +3,7 @@
 Each directory here is a **fixture repo**: a fake repository tree (`project.json`
 files, compose files, dotenv files) that tests run the CLI against. Tests never
 depend on `../docker-host` or on real docker state — external effects stay behind
-the process-spawn seam (`tug::process::Runner`), where a `RecordingRunner`
+the process-spawn seam (`dockit::process::Runner`), where a `RecordingRunner`
 captures the argv sequence instead of spawning anything.
 
 Conventions:
