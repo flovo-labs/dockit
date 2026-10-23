@@ -1,12 +1,12 @@
-# tug — Domain Context
+# dockit — Domain Context
 
-The vocabulary tug is built around. These are the words the code, the CLI, and
+The vocabulary dockit is built around. These are the words the code, the CLI, and
 [`docs/reference.md`](docs/reference.md) all use for the same things; if you're
 reading the source or writing about it, use them too.
 
 ## Repository & projects
 
-- **Repository** — the git repository tug operates on. Every command resolves
+- **Repository** — the git repository dockit operates on. Every command resolves
   the **repo root** by walking up from the current directory to the first
   `.git`, and runs relative to it.
 
@@ -17,7 +17,7 @@ reading the source or writing about it, use them too.
 - **Compose project** — a project that also has a `docker-compose.yml` next to
   its `project.json`. Only these can be started, stopped, pulled, restarted, or
   have their logs streamed. Docker Compose derives the running container
-  project name from the compose file's **directory name**, which is how tug
+  project name from the compose file's **directory name**, which is how dockit
   matches running containers back to discovered projects.
 
 - **Graph-only project** — a project *without* a `docker-compose.yml` (for
@@ -26,8 +26,8 @@ reading the source or writing about it, use them too.
   cascades but is silently skipped by lifecycle commands; naming one directly
   for `up`/`down`/`pull`/etc. is an error.
 
-- **Ignored directory** — a directory named by the repo root's `.tugignore`
-  that discovery never descends into. Its `project.json` files are never read,
+- **Ignored directory** — a directory named by the repo root's `.dockitignore`
+  (or `.tugignore`) that discovery never descends into. Its `project.json` files are never read,
   so the projects inside do not exist as far as every command is concerned:
   they appear in no listing, and naming one is an unknown project.
   Dot-directories are always ignored. Directory names (`apps/`, `libs/`,
@@ -47,7 +47,7 @@ reading the source or writing about it, use them too.
   edges. The provisioning commands always act on the whole cascade; `up` does
   by default, but can be asked to start the named project alone.
 
-- **Topological order** — the deterministic ordering tug spawns work in:
+- **Topological order** — the deterministic ordering dockit spawns work in:
   dependencies first, then dependents, ties broken by declaration order.
   Its mirror, **reverse-topological order** (dependents first), is used to tear
   things down gracefully (`all down`).
@@ -61,7 +61,7 @@ reading the source or writing about it, use them too.
   of the base `docker-compose.yml` for the active environment (Docker Compose
   overlay semantics).
 
-- **Merged environment** — the single environment tug hands to every spawned
+- **Merged environment** — the single environment dockit hands to every spawned
   `docker` process, assembled from (highest precedence first) the CLI's own
   environment, then the project's and the repo root's `.env.local` / `.env`
   files. A value set by a higher layer is never overridden.

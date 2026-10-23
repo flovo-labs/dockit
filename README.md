@@ -1,17 +1,15 @@
-# tug
+# dockit
 
 **A tiny, opinionated CLI that orchestrates a repository's Docker Compose
 projects** — dependency-ordered startup, per-environment overlays,
 variable/volume/network provisioning, backup/restore, and scaffolding, on top
 of plain `docker compose`.
 
-A tugboat is the small vessel that guides larger ships into dock. `tug` does
-that for compose projects: `tug up traefik`, `tug pull bonob`, `tug configure
-navidrome`.
+Dockit guides and orchestrates compose projects: `dockit up traefik`, `dockit pull bonob`, `dockit configure navidrome`.
 
 ## What it does
 
-tug sits on top of `docker compose` and never becomes a runtime dependency of
+dockit sits on top of `docker compose` and never becomes a runtime dependency of
 your services — it only assembles and spawns `docker` commands, and your
 compose files stay runnable with plain `docker compose`.
 
@@ -34,7 +32,7 @@ binary on your `PATH` — no Node.js, no toolchain.
 
 ## The repository it expects
 
-tug is built for a repository laid out like this, where each service is a
+dockit is built for a repository laid out like this, where each service is a
 directory with a `project.json` describing its name, dependencies, and the
 variables/volumes/networks it needs:
 
@@ -45,7 +43,7 @@ variables/volumes/networks it needs:
   archive/<name>/         # retired services
   .env / .env.local       # dotenv layers
   .secrets/               # one file per secret
-  .tugignore              # optional: directories to stay out of entirely
+  .dockitignore          # optional: directories to stay out of entirely (.tugignore also supported)
 ```
 
 ```jsonc
@@ -62,7 +60,7 @@ variables/volumes/networks it needs:
 
 Directory names (`apps/`, `libs/`, `archive/`) are convention — discovery scans
 the whole repo for `project.json` files, skipping dot-directories and anything
-an optional root `.tugignore` names. The full contract is in
+an optional root `.dockitignore` (or `.tugignore`) names. The full contract is in
 [`docs/reference.md`](docs/reference.md); the vocabulary is in
 [`CONTEXT.md`](CONTEXT.md).
 
@@ -81,7 +79,7 @@ Pin a version or change the target directory:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/raeffs/tug/main/install.sh \
-  | TUG_VERSION=v1.0.0 TUG_INSTALL_DIR=/usr/local/bin sh
+  | DOCKIT_VERSION=v1.0.0 DOCKIT_INSTALL_DIR=/usr/local/bin sh
 ```
 
 **Manual download** (verify the checksum yourself):
@@ -89,10 +87,10 @@ curl -fsSL https://raw.githubusercontent.com/raeffs/tug/main/install.sh \
 ```sh
 VERSION=v1.0.0
 base=https://github.com/raeffs/tug/releases/download/$VERSION
-curl -fsSLO $base/tug-$VERSION-x86_64-unknown-linux-musl
-curl -fsSLO $base/tug-$VERSION-x86_64-unknown-linux-musl.sha256
-sha256sum -c tug-$VERSION-x86_64-unknown-linux-musl.sha256
-install -m 0755 tug-$VERSION-x86_64-unknown-linux-musl ~/.local/bin/tug
+curl -fsSLO $base/dockit-$VERSION-x86_64-unknown-linux-musl
+curl -fsSLO $base/dockit-$VERSION-x86_64-unknown-linux-musl.sha256
+sha256sum -c dockit-$VERSION-x86_64-unknown-linux-musl.sha256
+install -m 0755 dockit-$VERSION-x86_64-unknown-linux-musl ~/.local/bin/dockit
 ```
 
 **From source** (needs a Rust toolchain):
@@ -103,41 +101,41 @@ cargo install --git https://github.com/raeffs/tug   # or: cargo build --release
 
 ## Shell completions
 
-`tug completions <shell>` prints a completion script for `bash`, `zsh`, or
+`dockit completions <shell>` prints a completion script for `bash`, `zsh`, or
 `fish`. Completion is dynamic — it completes subcommands, flags, and your
 repository's discovered project names. Enable it for your shell:
 
 ```sh
 # bash — add to ~/.bashrc:
-source <(tug completions bash)
+source <(dockit completions bash)
 
 # zsh — write to a directory on your $fpath, before compinit:
-tug completions zsh > ~/.zsh/completions/_tug
+dockit completions zsh > ~/.zsh/completions/_dockit
 
 # fish:
-tug completions fish > ~/.config/fish/completions/tug.fish
+dockit completions fish > ~/.config/fish/completions/dockit.fish
 ```
 
-`tug` must be on your `$PATH` when completion runs, since the script calls back
+`dockit` must be on your `$PATH` when completion runs, since the script calls back
 out to it. See [`docs/reference.md`](docs/reference.md) for the details.
 
 ## Quickstart
 
 ```sh
 # From anywhere inside your repository:
-tug list                      # every project and its direct dependencies
-tug configure bonob --use-defaults   # provision variables/volumes/networks for the chain
-tug up bonob                  # start bonob and its dependencies, in order
-tug ps                        # what's running
-tug logs bonob --follow       # tail its logs
-tug restart bonob             # bounce just bonob
-tug down bonob                # stop just bonob
+dockit list                      # every project and its direct dependencies
+dockit configure bonob --use-defaults   # provision variables/volumes/networks for the chain
+dockit up bonob                  # start bonob and its dependencies, in order
+dockit ps                        # what's running
+dockit logs bonob --follow       # tail its logs
+dockit restart bonob             # bounce just bonob
+dockit down bonob                # stop just bonob
 ```
 
 Preview exactly what would run, without touching docker:
 
 ```sh
-tug up bonob --dry-run
+dockit up bonob --dry-run
 ```
 
 ## Commands
@@ -163,7 +161,7 @@ Every command takes `--help`. Full behaviour — exact `docker` invocations,
 environment resolution, provisioning rules, error handling — is in
 [`docs/reference.md`](docs/reference.md).
 
-## Using tug in CI
+## Using dockit in CI
 
 `configure --use-defaults` and `up --wait` are the CI-facing commands; `deps
 --reverse --transitive --json` lets a pipeline compute the affected-project set.
@@ -173,19 +171,19 @@ variables the dependencies define.
 Install a pinned, checksum-verified binary in a GitHub Actions step:
 
 ```yaml
-- name: Install tug
+- name: Install dockit
   run: |
     VERSION=v1.0.0
     base=https://github.com/raeffs/tug/releases/download/$VERSION
-    curl -fsSLO $base/tug-$VERSION-x86_64-unknown-linux-musl
-    curl -fsSLO $base/tug-$VERSION-x86_64-unknown-linux-musl.sha256
-    sha256sum -c tug-$VERSION-x86_64-unknown-linux-musl.sha256
-    install -m 0755 tug-$VERSION-x86_64-unknown-linux-musl /usr/local/bin/tug
+    curl -fsSLO $base/dockit-$VERSION-x86_64-unknown-linux-musl
+    curl -fsSLO $base/dockit-$VERSION-x86_64-unknown-linux-musl.sha256
+    sha256sum -c dockit-$VERSION-x86_64-unknown-linux-musl.sha256
+    install -m 0755 dockit-$VERSION-x86_64-unknown-linux-musl /usr/local/bin/dockit
 ```
 
 ## Development
 
-tug is Rust, with a deliberately minimal dependency set (`clap`, `serde`,
+dockit is Rust, with a deliberately minimal dependency set (`clap`, `serde`,
 `serde_json`, `getrandom`, `anyhow`) — everything else is hand-rolled. The
 toolchain is pinned in `rust-toolchain.toml`.
 

@@ -1,7 +1,7 @@
 name: Release
 
 # Publish a static x86_64-unknown-linux-musl binary to the public GitHub
-# releases repo (raeffs/tug) when a vX.Y.Z tag is pushed.
+# releases repo when a vX.Y.Z tag is pushed.
 on:
   push:
     tags: ['v*.*.*']
@@ -50,8 +50,8 @@ jobs:
       - name: Package binary and checksum
         run: |
           TAG="${GITHUB_REF_NAME}"
-          ASSET="tug-${TAG}-${TARGET}"
-          cp "target/${TARGET}/release/tug" "$ASSET"
+          ASSET="dockit-${TAG}-${TARGET}"
+          cp "target/${TARGET}/release/dockit" "$ASSET"
           sha256sum "$ASSET" > "${ASSET}.sha256"
           echo "ASSET=$ASSET" >> "$GITHUB_ENV"
 

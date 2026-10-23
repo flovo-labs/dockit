@@ -1,23 +1,23 @@
 #!/bin/sh
-# install.sh — install the tug CLI from its public GitHub releases.
+# install.sh — install the dockit CLI from its public GitHub releases.
 #
 #   curl -fsSL https://raw.githubusercontent.com/raeffs/tug/main/install.sh | sh
 #
 # Installs the latest stable release by default, or a pinned version. Verifies
-# the published sha256 checksum before installing. tug ships as a single static
+# the published sha256 checksum before installing. dockit ships as a single static
 # x86_64-unknown-linux-musl binary, so it runs on any x86_64 Linux (glibc or
 # musl), no runtime dependencies.
 #
 # Configuration (environment variables, or the flags shown in --help):
-#   TUG_VERSION       pin a release, e.g. v0.1.0   (default: latest stable)
-#   TUG_INSTALL_DIR   install location             (default: ~/.local/bin)
+#   DOCKIT_VERSION       pin a release, e.g. v0.1.0   (default: latest stable)
+#   DOCKIT_INSTALL_DIR   install location             (default: ~/.local/bin)
 set -eu
 
 REPO="raeffs/tug"
 TARGET="x86_64-unknown-linux-musl"
 
-VERSION="${TUG_VERSION:-}"
-INSTALL_DIR="${TUG_INSTALL_DIR:-${HOME}/.local/bin}"
+VERSION="${DOCKIT_VERSION:-${TUG_VERSION:-}}"
+INSTALL_DIR="${DOCKIT_INSTALL_DIR:-${TUG_INSTALL_DIR:-${HOME}/.local/bin}}"
 
 log()  { printf 'install.sh: %s\n' "$*" >&2; }
 die()  { printf 'install.sh: error: %s\n' "$*" >&2; exit 1; }
@@ -26,7 +26,7 @@ usage() {
   cat >&2 <<EOF
 Usage: install.sh [options] [VERSION]
 
-Install the tug CLI from https://github.com/${REPO}/releases.
+Install the dockit CLI from https://github.com/${REPO}/releases.
 
 Options:
   -v, --version VERSION   install VERSION (e.g. v0.1.0); default is latest stable
@@ -34,12 +34,12 @@ Options:
   -h, --help              show this help
 
 A bare VERSION argument is equivalent to --version. Environment variables
-TUG_VERSION and TUG_INSTALL_DIR provide the same settings; explicit flags win.
+DOCKIT_VERSION and DOCKIT_INSTALL_DIR provide the same settings; explicit flags win.
 
 Examples:
   curl -fsSL .../install.sh | sh
   curl -fsSL .../install.sh | sh -s -- v0.1.0
-  TUG_VERSION=v0.1.0 TUG_INSTALL_DIR=/usr/local/bin sh install.sh
+  DOCKIT_VERSION=v0.1.0 DOCKIT_INSTALL_DIR=/usr/local/bin sh install.sh
 EOF
 }
 
@@ -93,7 +93,7 @@ case "$VERSION" in
   *)  die "version must look like vX.Y.Z (got '$VERSION')" ;;
 esac
 
-ASSET="tug-${VERSION}-${TARGET}"
+ASSET="dockit-${VERSION}-${TARGET}"
 BASE_URL="https://github.com/${REPO}/releases/download/${VERSION}"
 
 # --- download + verify -------------------------------------------------------
@@ -113,12 +113,12 @@ log "verifying checksum..."
 
 # --- install -----------------------------------------------------------------
 mkdir -p "$INSTALL_DIR" || die "cannot create install dir: $INSTALL_DIR"
-cp "${tmp}/${ASSET}" "${INSTALL_DIR}/tug" || die "cannot write to $INSTALL_DIR"
-chmod 0755 "${INSTALL_DIR}/tug"
+cp "${tmp}/${ASSET}" "${INSTALL_DIR}/dockit" || die "cannot write to $INSTALL_DIR"
+chmod 0755 "${INSTALL_DIR}/dockit"
 
-log "installed tug ${VERSION} -> ${INSTALL_DIR}/tug"
-"${INSTALL_DIR}/tug" --version >/dev/null 2>&1 \
-  && log "$("${INSTALL_DIR}/tug" --version 2>&1)"
+log "installed dockit ${VERSION} -> ${INSTALL_DIR}/dockit"
+"${INSTALL_DIR}/dockit" --version >/dev/null 2>&1 \
+  && log "$("${INSTALL_DIR}/dockit" --version 2>&1)"
 
 # PATH hint (POSIX-safe membership test).
 case ":${PATH}:" in

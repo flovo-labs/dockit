@@ -1,4 +1,4 @@
-# tug
+# dockit
 
 ## Issue tracker
 
