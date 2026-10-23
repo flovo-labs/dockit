@@ -6,7 +6,7 @@ title = "Flovo Dockit Documentation"
 description = "Your containers, under control. Docker operations, backups, recovery, and deployment safety in one CLI."
 
 [output.html]
-git-repository-url = "https://github.com/raeffs/tug"
+git-repository-url = "https://github.com/flovo-labs/dockit"
 site-url = "/dockit/"
 preferred-dark-theme = "coal"
 default-theme = "coal"

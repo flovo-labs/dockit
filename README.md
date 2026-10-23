@@ -79,13 +79,13 @@ Linux. For other platforms, build from source.
 **Install script** (latest release into `~/.local/bin`):
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/raeffs/tug/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/flovo-labs/dockit/main/install.sh | sh
 ```
 
 Pin a version or change the target directory:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/raeffs/tug/main/install.sh \
+curl -fsSL https://raw.githubusercontent.com/flovo-labs/dockit/main/install.sh \
   | DOCKIT_VERSION=v1.0.0 DOCKIT_INSTALL_DIR=/usr/local/bin sh
 ```
 
@@ -93,7 +93,7 @@ curl -fsSL https://raw.githubusercontent.com/raeffs/tug/main/install.sh \
 
 ```sh
 VERSION=v1.0.0
-base=https://github.com/raeffs/tug/releases/download/$VERSION
+base=https://github.com/flovo-labs/dockit/releases/download/$VERSION
 curl -fsSLO $base/dockit-$VERSION-x86_64-unknown-linux-musl
 curl -fsSLO $base/dockit-$VERSION-x86_64-unknown-linux-musl.sha256
 sha256sum -c dockit-$VERSION-x86_64-unknown-linux-musl.sha256
@@ -103,7 +103,7 @@ install -m 0755 dockit-$VERSION-x86_64-unknown-linux-musl ~/.local/bin/dockit
 **From source** (needs a Rust toolchain):
 
 ```sh
-cargo install --git https://github.com/raeffs/tug   # or: cargo build --release
+cargo install --git https://github.com/flovo-labs/dockit   # or: cargo build --release
 ```
 
 ## Shell completions
@@ -181,7 +181,7 @@ Install a pinned, checksum-verified binary in a GitHub Actions step:
 - name: Install dockit
   run: |
     VERSION=v1.0.0
-    base=https://github.com/raeffs/tug/releases/download/$VERSION
+    base=https://github.com/flovo-labs/dockit/releases/download/$VERSION
     curl -fsSLO $base/dockit-$VERSION-x86_64-unknown-linux-musl
     curl -fsSLO $base/dockit-$VERSION-x86_64-unknown-linux-musl.sha256
     sha256sum -c dockit-$VERSION-x86_64-unknown-linux-musl.sha256

@@ -9,7 +9,7 @@ Flovo Dockit distributes as a single, static `x86_64-unknown-linux-musl` binary 
 To install the latest stable release into `~/.local/bin`:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/raeffs/tug/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/flovo-labs/dockit/main/install.sh | sh
 ```
 
 ### Pinning a Version or Directory
@@ -18,7 +18,7 @@ You can customize the target directory or pin a specific version using environme
 
 ```bash
 # Pin version v1.1.0 into /usr/local/bin
-curl -fsSL https://raw.githubusercontent.com/raeffs/tug/main/install.sh \
+curl -fsSL https://raw.githubusercontent.com/flovo-labs/dockit/main/install.sh \
   | DOCKIT_VERSION=v1.1.0 DOCKIT_INSTALL_DIR=/usr/local/bin sh
 ```
 
@@ -31,7 +31,7 @@ To download and manually verify the SHA-256 integrity:
 ```bash
 VERSION="v1.1.0"
 TARGET="x86_64-unknown-linux-musl"
-BASE="https://github.com/raeffs/tug/releases/download/${VERSION}"
+BASE="https://github.com/flovo-labs/dockit/releases/download/${VERSION}"
 
 # Download binary and sha256 checksum
 curl -fsSLO "${BASE}/dockit-${VERSION}-${TARGET}"
@@ -52,8 +52,8 @@ If you are running on macOS, ARM64/aarch64 Linux, or want the bleeding-edge main
 
 ```bash
 # Clone the repository
-git clone https://github.com/raeffs/tug.git flovo-dockit
-cd flovo-dockit
+git clone https://github.com/flovo-labs/dockit.git
+cd dockit
 
 # Compile optimized release binary
 cargo build --release

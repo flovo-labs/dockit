@@ -1,7 +1,7 @@
 #!/bin/sh
 # install.sh — install the dockit CLI from its public GitHub releases.
 #
-#   curl -fsSL https://raw.githubusercontent.com/raeffs/tug/main/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/flovo-labs/dockit/main/install.sh | sh
 #
 # Installs the latest stable release by default, or a pinned version. Verifies
 # the published sha256 checksum before installing. dockit ships as a single static
@@ -13,7 +13,7 @@
 #   DOCKIT_INSTALL_DIR   install location             (default: ~/.local/bin)
 set -eu
 
-REPO="raeffs/tug"
+REPO="flovo-labs/dockit"
 TARGET="x86_64-unknown-linux-musl"
 
 VERSION="${DOCKIT_VERSION:-${TUG_VERSION:-}}"
