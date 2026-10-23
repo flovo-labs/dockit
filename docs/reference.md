@@ -31,7 +31,7 @@ dockit expects a repository shaped roughly like this:
   .backups/               # gitignored contents; default backup location
   .dockitignore           # optional (legacy .tugignore supported); directories discovery stays out of
   apps/<name>/            # one directory per running service
-  archive/<name>/         # retired services, typically named in .tugignore
+  archive/<name>/         # retired services, typically named in .dockitignore
   libs/<name>/            # shared compose snippets and graph-only projects
 ```
 
@@ -66,7 +66,7 @@ conventions. Two projects with the same `name` are an error.
 current working directory to the first directory containing `.git`. If there is
 none, it exits with an error.
 
-### 1.3 Ignore files: `.dockitignore` (and `.dockitignore` (or `.tugignore`))
+### 1.3 Ignore files: `.dockitignore` (and `.tugignore`)
 
 An optional file at the repo root naming directories discovery never descends
 into. It is read once per run, before any scanning.
@@ -543,7 +543,7 @@ backup never clobbers a previous archive.
 
 Same volume list, no cascade, same default/resolution for `--source-path`.
 Before spawning anything, **every** required `<source>/<name>.tar.bz2` must
-exist, or tug fails with a clear error (a half-restored project is worse than a
+exist, or dockit fails with a clear error (a half-restored project is worse than a
 clear refusal). Per volume:
 
 ```
@@ -581,7 +581,7 @@ repo. The `all` umbrella completes its three verbs; `new` takes a *new* name, so
 it is not offered existing project names.
 
 The emitted script is a small static forwarder that calls a hidden
-`tug __complete <words…>` helper at TAB-time; all grammar logic lives in the
+`dockit __complete <words…>` helper at TAB-time; all grammar logic lives in the
 binary, read from its own CLI definition so it never drifts from the real
 surface. `__complete` is fault-tolerant: run outside a repository it still
 completes subcommands and flags (dropping only project names) and always exits 0
@@ -590,10 +590,10 @@ with nothing on stderr — a completer must never spill errors into the shell.
 Install:
 
 - **bash:** `source <(dockit completions bash)` in `~/.bashrc`, or write it to
-  `~/.local/share/bash-completion/completions/tug`.
-- **zsh:** `dockit completions zsh > ~/.zsh/completions/_tug` on `$fpath` (before
+  `~/.local/share/bash-completion/completions/dockit`.
+- **zsh:** `dockit completions zsh > ~/.zsh/completions/_dockit` on `$fpath` (before
   `compinit`).
-- **fish:** `dockit completions fish > ~/.config/fish/completions/tug.fish`.
+- **fish:** `dockit completions fish > ~/.config/fish/completions/dockit.fish`.
 
 `dockit` must be on `$PATH` when completion runs, since the script shells back out
 to it.
@@ -629,7 +629,7 @@ best-effort across the running set (4.2).
   argv of every spawned command are identical across runs. This is what makes
   `--dry-run` a usable parity and regression tool.
 - **Config compatibility.** Existing `project.json` files are read as-is;
-  unknown fields are ignored. tug invents no new config format.
+  unknown fields are ignored. dockit invents no new config format.
 - **Native, not shelled out.** dotenv parsing, secret generation, hostname and
-  docker-group lookups, and stdout/stdin redirection are all done natively — tug
+  docker-group lookups, and stdout/stdin redirection are all done natively — dockit
   shells out only to `docker`.
